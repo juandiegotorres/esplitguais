@@ -1,0 +1,7 @@
+{# Requiere "group" en el contexto. "active" ∈ {gastos, saldos, actividad, miembros}. #}
+<nav class="group-nav">
+  <a href="{% url 'ledger:group_detail' group.pk %}" {% if active == "gastos" %}class="active" aria-current="page"{% endif %}>Gastos</a>
+  <a href="{% url 'ledger:balances' group.pk %}" {% if active == "saldos" %}class="active" aria-current="page"{% endif %}>Saldos</a>
+  <a href="{% url 'ledger:activity' group.pk %}" {% if active == "actividad" %}class="active" aria-current="page"{% endif %}>Actividad</a>
+  <a href="{% url 'ledger:group_members' group.pk %}" {% if active == "miembros" %}class="active" aria-current="page"{% endif %}>Miembros</a>
+</nav>
