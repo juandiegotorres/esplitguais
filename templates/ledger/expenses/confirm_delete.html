@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Borrar gasto · {{ group.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>¿Borrar el gasto?</h1>
+</div>
+<form method="post" class="form card stack">
+  {% csrf_token %}
+  <p>Vas a borrar <strong>{{ expense.description }}</strong> por <span class="amount">{{ expense.amount_cents|ars }}</span>. Deja de contar para los saldos y queda registrado en la actividad del grupo.</p>
+  <button type="submit" class="btn btn-danger">Sí, borrar</button>
+  <a class="btn btn-link" href="{% url 'ledger:expense_detail' group.pk expense.pk %}">Cancelar</a>
+</form>
+{% endblock %}

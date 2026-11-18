@@ -1,0 +1,14 @@
+# Override para probar en local sin túnel:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+# Publica la app solo en 127.0.0.1:8000. cloudflared queda en el perfil "tunnel"
+# y no arranca salvo que se pida con --profile tunnel.
+services:
+  app:
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      CSRF_TRUSTED_ORIGINS: http://localhost:8000,http://127.0.0.1:8000
+
+  cloudflared:
+    profiles: ["tunnel"]

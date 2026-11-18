@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Mis grupos · Esplitiguais{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Mis grupos</h1>
+  <a class="btn btn-primary" href="{% url 'ledger:group_create' %}">Nuevo grupo</a>
+</div>
+{% if rows %}
+  <ul class="list card">
+    {% for row in rows %}
+      <li class="list-row">
+        <a class="row-main" href="{% url 'ledger:group_detail' row.group.pk %}">{{ row.group.name }}</a>
+        <span class="row-side">
+          {% if row.balance > 0 %}
+            <span class="muted">te deben</span> <span class="amount amount-pos">{{ row.balance|ars }}</span>
+          {% elif row.balance < 0 %}
+            <span class="muted">debés</span> <span class="amount amount-neg">{{ row.balance|ars }}</span>
+          {% else %}
+            <span class="muted">al día</span>
+          {% endif %}
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <div class="empty">
+    <p>Todavía no estás en ningún grupo.</p>
+    <a class="btn btn-primary" href="{% url 'ledger:group_create' %}">Crear el primero</a>
+  </div>
+{% endif %}
+{% endblock %}

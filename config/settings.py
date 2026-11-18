@@ -3,6 +3,7 @@
 All deployment-specific values come from environment variables (see .env.example).
 """
 
+from datetime import timedelta
 import os
 from pathlib import Path
 
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     "accounts",
     "ledger",
     "pwa",
+    "axes",
 ]
 
 MIDDLEWARE = [
@@ -50,6 +52,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Debe ir al final: django-axes intercepta los bloqueos de login.
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -112,3 +116,24 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 días
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+
+# HSTS: activarlo en producción vía .env (Cloudflare ya sirve solo HTTPS).
+SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "0"))
+# La redirección a HTTPS la hace Cloudflare ("Always Use HTTPS"); activarla acá
+# rompería docker-compose.dev.yml (HTTP plano en 127.0.0.1).
+SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", False)
+
+AUTHENTICATION_BACKENDS = [
+    # Primero axes: rechaza el intento si la combinación usuario+IP está bloqueada.
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# django-axes: 5 intentos fallidos por usuario+IP bloquean esa combinación 1 hora.
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(hours=1)
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_RESET_ON_SUCCESS = True
+# Detrás de Cloudflare Tunnel REMOTE_ADDR es siempre el contenedor cloudflared.
+AXES_CLIENT_IP_CALLABLE = "accounts.ip.client_ip"
+AXES_LOCKOUT_TEMPLATE = "registration/lockout.html"

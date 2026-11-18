@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}{{ expense.description }} · {{ group.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ expense.description }}</h1>
+  <a class="btn btn-link" href="{% url 'ledger:group_detail' group.pk %}">Volver</a>
+</div>
+<div class="card stack">
+  <p class="amount">{{ expense.amount_cents|ars }}</p>
+  <p class="muted">{{ expense.date|date:"l j \d\e F \d\e Y" }} · {{ expense.get_category_display }} · {{ expense.get_split_type_display }}</p>
+</div>
+
+<section class="card stack">
+  <h2>Pagó</h2>
+  <ul class="list">
+    {% for payer in payers %}
+      <li class="list-row">
+        <span class="row-main">{{ payer.user.get_full_name|default:payer.user.username }}</span>
+        <span class="row-side amount">{{ payer.paid_cents|ars }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="card stack">
+  <h2>Le toca a cada uno</h2>
+  <ul class="list">
+    {% for share in shares %}
+      <li class="list-row">
+        <span class="row-main">
+          {{ share.user.get_full_name|default:share.user.username }}
+          {% if share.input_label %}
+            <span class="muted">({{ share.input_label }}{% if expense.split_type == "percent" %} %{% else %} partes{% endif %})</span>
+          {% endif %}
+        </span>
+        <span class="row-side amount">{{ share.owed_cents|ars }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<p class="muted">
+  Lo cargó {{ expense.created_by.get_full_name|default:expense.created_by.username }} el {{ expense.created_at|date:"j/n/Y H:i" }}.
+  {% if last_edit %}Última edición: {{ last_edit.actor.get_full_name|default:last_edit.actor.username }} el {{ last_edit.created_at|date:"j/n/Y H:i" }}.{% endif %}
+</p>
+
+<div class="grid-2">
+  <a class="btn" href="{% url 'ledger:expense_edit' group.pk expense.pk %}">Editar</a>
+  <a class="btn btn-danger" href="{% url 'ledger:expense_delete' group.pk expense.pk %}">Borrar</a>
+</div>
+{% endblock %}

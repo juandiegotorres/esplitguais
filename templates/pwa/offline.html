@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Sin conexión · Esplitiguais{% endblock %}
+{% block content %}
+<section class="empty empty-page">
+  <svg class="empty-icon" viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
+    <path d="M6 18a26 26 0 0 1 36 0M12 25a17 17 0 0 1 24 0M18 32a8 8 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="24" cy="38" r="2.5" fill="currentColor"/>
+    <path d="M8 8l32 32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+  <h1>Sin conexión</h1>
+  <p class="muted">No pudimos llegar al servidor. Revisá el wifi o los datos y volvé a intentar.</p>
+  <p class="muted">Los gastos se cargan solo con conexión, así todos ven los mismos saldos.</p>
+  <a class="btn btn-primary" href="/">Reintentar</a>
+</section>
+{% endblock %}

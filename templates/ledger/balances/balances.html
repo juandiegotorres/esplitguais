@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Saldos · {{ group.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ group.name }}</h1>
+</div>
+{% include "ledger/_group_nav.html" %}
+
+<div class="stack">
+  <section class="card">
+    <h2>Saldos</h2>
+    <ul class="list">
+      {% for row in rows %}
+        <li class="list-row">
+          <div class="row-main">
+            {% if row.is_me %}<strong>{{ row.name }} (vos)</strong>{% else %}{{ row.name }}{% endif %}
+          </div>
+          <div class="row-side">
+            {% if row.cents > 0 %}
+              <span class="amount amount-pos">le deben {{ row.abs_cents|ars }}</span>
+            {% elif row.cents < 0 %}
+              <span class="amount amount-neg">debe {{ row.abs_cents|ars }}</span>
+            {% else %}
+              <span class="muted">al día</span>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Quién le paga a quién</h2>
+    {% if transfers %}
+      <ul class="list">
+        {% for t in transfers %}
+          <li class="list-row">
+            <div class="row-main">
+              {% if t.involves_me %}<strong>{{ t.from_name }} → {{ t.to_name }}</strong>{% else %}{{ t.from_name }} → {{ t.to_name }}{% endif %}
+              <div class="amount">{{ t.amount_cents|ars }}</div>
+            </div>
+            <div class="row-side">
+              <a class="btn" href="{{ t.url }}">Registrar pago</a>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">Están todos al día.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <div class="page-header">
+      <h2>Pagos registrados</h2>
+      <a class="btn btn-primary" href="{% url 'ledger:settlement_create' group.pk %}">Registrar pago</a>
+    </div>
+    {% if settlements %}
+      <ul class="list">
+        {% for s in settlements %}
+          <li class="list-row">
+            <div class="row-main">
+              {{ s.from_user.first_name|default:s.from_user.username }} le pagó a {{ s.to_user.first_name|default:s.to_user.username }}
+              <div class="muted">{{ s.date|date:"d/m/Y" }}{% if s.note %} · {{ s.note }}{% endif %}</div>
+            </div>
+            <div class="row-side">
+              <span class="amount">{{ s.amount_cents|ars }}</span>
+              <form method="post" action="{% url 'ledger:settlement_delete' group.pk s.pk %}" class="inline"
+                    onsubmit="return confirm('¿Borrar este pago? Los saldos se van a recalcular.');">
+                {% csrf_token %}
+                <button type="submit" class="btn-link" aria-label="Borrar pago de {{ s.from_user.first_name|default:s.from_user.username }} a {{ s.to_user.first_name|default:s.to_user.username }}">Borrar</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">Todavía no se registraron pagos.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Demasiados intentos · Esplitiguais{% endblock %}
+
+{% block content %}
+<div class="page-header"><h1>Demasiados intentos</h1></div>
+<div class="card stack">
+  <p>Hubo {{ failure_limit }} intentos fallidos con ese usuario desde tu conexión, así que lo bloqueamos por una hora.</p>
+  <p class="muted">Si te olvidaste la contraseña, pedile al administrador que te la resetee: eso también te desbloquea.</p>
+</div>
+{% endblock %}

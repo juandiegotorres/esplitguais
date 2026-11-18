@@ -4,20 +4,40 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}Esplitiguais{% endblock %}</title>
+  <meta name="theme-color" content="#F7F6F3">
+  <meta name="color-scheme" content="light">
+  <meta name="application-name" content="Esplitiguais">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Esplitiguais">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="{% url 'pwa:manifest' %}">
+  <link rel="icon" href="{% static 'icons/favicon.ico' %}" sizes="any">
+  <link rel="icon" href="{% static 'icons/favicon-32.png' %}" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
   <script src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js" defer></script>
+  <script src="{% static 'js/pwa.js' %}" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <header class="topbar">
-    <a class="brand" href="/">Esplitiguais</a>
-    {% if user.is_authenticated %}
-      <nav class="topnav">
-        <a href="{% url 'password_change' %}">{{ user.username }}</a>
-        <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}<button type="submit" class="btn-link">Salir</button></form>
-      </nav>
-    {% endif %}
+    <div class="topbar-inner">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">÷</span>Esplitiguais</a>
+      {% if user.is_authenticated %}
+        <nav class="topnav" aria-label="Cuenta">
+          <details class="user-menu">
+            <summary aria-label="Menú de {{ user.username }}"><span class="avatar" aria-hidden="true">{{ user.username|first|upper }}</span><span class="user-name">{{ user.username }}</span></summary>
+            <div class="user-menu-panel">
+              <a href="{% url 'password_change' %}">Cambiar contraseña</a>
+              <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}<button type="submit" class="btn-link">Salir</button></form>
+            </div>
+          </details>
+        </nav>
+      {% endif %}
+    </div>
   </header>
   <main class="container">
     {% if messages %}

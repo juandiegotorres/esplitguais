@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar · Esplitiguais{% endblock %}
+
+{% block content %}
+<div class="page-header"><h1>Entrar</h1></div>
+<div class="card">
+  <form method="post" action="{% url 'login' %}" class="form stack">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="field-error">{{ form.non_field_errors }}</div>{% endif %}
+    {% include "registration/_field.html" with field=form.username %}
+    {% include "registration/_field.html" with field=form.password %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn btn-primary">Entrar</button>
+  </form>
+</div>
+<p class="muted">¿Te olvidaste la contraseña? Pedile al administrador que te la resetee.</p>
+{% endblock %}
