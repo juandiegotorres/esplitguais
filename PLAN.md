@@ -15,7 +15,7 @@ App web para repartir gastos entre amigos, estilo Splitwise. Uso privado: 8 pers
 | Pagadores | Un gasto puede tener uno o varios pagadores |
 | Alojamiento | VPS con Docker Compose |
 | Exposición a internet | **Pendiente.** Opción recomendada: Cloudflare Tunnel con `gastos.practicomercio.com.ar` (ver [Despliegue](#despliegue)) |
-| PWA | Sí, hecha a mano (manifest + service worker), sin carga de gastos offline |
+| PWA | Sí, hecha a mano (manifest + service worker), sin carga de gastos offline. Notificaciones Web Push (VAPID + `pywebpush`) para gastos nuevos o editados y pagos registrados |
 
 ### Por qué Django
 
@@ -40,7 +40,6 @@ Lo que más código ocupa (formulario de gasto con varios pagadores y cuatro tip
 
 ### Fase posterior (opcional)
 
-- Notificaciones push (Web Push con claves VAPID y `pywebpush`; no requiere servidor de correo).
 - Foto del ticket.
 - Exportar a CSV.
 - Gastos recurrentes.
@@ -144,6 +143,7 @@ Las contraseñas se guardan hasheadas: no se insertan a mano en la base de datos
 | `base.html` | Link al manifest, `apple-touch-icon`, metas para iOS |
 | Sesión | `SESSION_COOKIE_AGE` de 90 días para no pedir login a cada rato |
 | iOS | Pantalla con instrucciones: Compartir → "Agregar a inicio" |
+| Notificaciones | Web Push con VAPID: suscripción por dispositivo (`pwa.PushSubscription`), envío sincrónico al guardar (`pwa/push.py`), reglas de destinatarios en `ledger/notifications.py`. iOS: solo con la app instalada |
 
 Requiere HTTPS (lo da Cloudflare o un certificado propio).
 

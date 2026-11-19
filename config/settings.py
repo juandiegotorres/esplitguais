@@ -68,6 +68,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "pwa.context_processors.push_settings",
             ],
         },
     },
@@ -139,3 +140,12 @@ AXES_RESET_ON_SUCCESS = True
 # Detrás de Cloudflare Tunnel REMOTE_ADDR es siempre el contenedor cloudflared.
 AXES_CLIENT_IP_CALLABLE = "accounts.ip.client_ip"
 AXES_LOCKOUT_TEMPLATE = "registration/lockout.html"
+
+# Notificaciones push (Web Push con VAPID). Sin las dos claves la función queda apagada.
+# Generarlas con `manage.py generar_vapid`. El "subject" es el contacto que ven los
+# servicios de push (Apple exige https: o mailto:); por defecto, la URL del sitio.
+WEBPUSH_VAPID_PUBLIC_KEY = os.environ.get("WEBPUSH_VAPID_PUBLIC_KEY", "")
+WEBPUSH_VAPID_PRIVATE_KEY = os.environ.get("WEBPUSH_VAPID_PRIVATE_KEY", "")
+WEBPUSH_VAPID_SUBJECT = os.environ.get("WEBPUSH_VAPID_SUBJECT") or (
+    f"https://{ALLOWED_HOSTS[0]}" if ALLOWED_HOSTS else ""
+)

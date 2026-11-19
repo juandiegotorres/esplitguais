@@ -7,7 +7,7 @@ from django.views.decorators.http import require_POST
 
 from accounts.models import aliases_for
 
-from .. import services
+from .. import notifications, services
 from ..access import get_group_for_user, get_settlement_for_user
 from ..forms_settlements import SettlementForm, display_name
 
@@ -56,6 +56,7 @@ def settlement_create(request, group_id: int):
             except ValidationError as exc:
                 form.add_service_errors(exc)
             else:
+                notifications.settlement_created(settlement, actor=request.user)
                 messages.success(
                     request,
                     f"{display_name(settlement.from_user)} le pagó "

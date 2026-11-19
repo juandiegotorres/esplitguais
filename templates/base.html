@@ -22,9 +22,11 @@
   <script src="{% static 'js/alias.js' %}" defer></script>
   <script src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js" defer></script>
   <script src="{% static 'js/pwa.js' %}" defer></script>
+  <script src="{% static 'js/loader.js' %}" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <div class="page-loader" aria-hidden="true"></div>
   <header class="topbar">
     <div class="topbar-inner">
       {% block appbar %}<a class="brand" href="/"><span class="brand-mark" aria-hidden="true">÷</span>Esplitiguais</a>{% endblock %}
@@ -34,6 +36,7 @@
             <summary aria-label="Menú de {{ user.first_name|default:user.username }}">{% avatar user %}<span class="user-name">{{ user.first_name|default:user.username }}</span></summary>
             <div class="user-menu-panel">
               <a href="{% url 'profile' %}">Mi nombre y alias</a>
+              {% if push_public_key %}<a href="{% url 'profile' %}#notificaciones">Notificaciones</a>{% endif %}
               <a href="{% url 'password_change' %}">Cambiar contraseña</a>
               <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}<button type="submit" class="btn-link danger">Salir</button></form>
             </div>

@@ -62,6 +62,25 @@ La IP real sale del header `CF-Connecting-IP` que agrega Cloudflare, pero solo s
 
 Desbloquear antes de la hora: `resetear_password` (desbloquea al usuario) o `manage.py axes_reset_username juan` (con el prefijo de Docker o cPanel de arriba).
 
+## Notificaciones push
+
+Avisan en el celular (o la compu) cuando alguien **carga o edita un gasto** en el que participás (pagaste o tenés parte; al editar, también si te sacaron) o **registra un pago** con vos. Quien hace el cambio no recibe aviso. Es Web Push estándar con claves VAPID (`pywebpush`): no hace falta servidor de correo ni cuentas externas.
+
+Activarlas en el servidor, una sola vez (con el prefijo de Docker o cPanel de [Usuarios](#usuarios)):
+
+```bash
+python manage.py generar_vapid     # imprime WEBPUSH_VAPID_PUBLIC_KEY y WEBPUSH_VAPID_PRIVATE_KEY
+```
+
+Pegar las dos líneas en `.env` (la privada es secreta). Si las claves cambian, cada dispositivo tiene que volver a activarlas. Sin claves la función queda apagada y no aparece en la app.
+
+Cada persona las activa en cada dispositivo desde **Mi cuenta → Notificaciones** (también en el menú del avatar):
+
+- **iPhone/iPad**: solo con la app **instalada** en la pantalla de inicio (iOS 16.4 o más nuevo) y abierta desde ahí. En Safari común el botón no aparece.
+- **Android y compu**: funciona también en el navegador.
+
+El envío ocurre al guardar, en paralelo a todos los dispositivos, con 5 s de tope por envío: si el servicio de push de Apple o Google falla, el gasto se guarda igual y el error queda en el log. Los dispositivos que ya no existen (app desinstalada, permiso revocado) se borran solos. Las suscripciones se ven en `/admin`.
+
 ## Despliegue en el VPS (Cloudflare Tunnel)
 
 Con el túnel, el VPS no abre ningún puerto web: `cloudflared` sale hacia Cloudflare y Cloudflare maneja HTTPS y certificados.
@@ -249,3 +268,5 @@ docker compose down
 | `SECURE_SSL_REDIRECT` | Opcional; Cloudflare ya redirige a HTTPS |
 | `STATIC_ROOT` | Solo cPanel: carpeta `static` del docroot (la agrega `deploy-cpanel.sh`). Por defecto `staticfiles/` |
 | `CLOUDFLARE_TUNNEL_TOKEN` | Solo Docker: token del túnel para `cloudflared` |
+| `WEBPUSH_VAPID_PUBLIC_KEY` / `WEBPUSH_VAPID_PRIVATE_KEY` | Claves de las notificaciones push (`manage.py generar_vapid`). Vacías = apagadas |
+| `WEBPUSH_VAPID_SUBJECT` | Opcional: contacto para Apple/Google (`https://...` o `mailto:...`). Por defecto, `https://` + el primer `ALLOWED_HOSTS` |

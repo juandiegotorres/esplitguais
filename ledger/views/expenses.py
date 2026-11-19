@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
 
-from .. import services
+from .. import notifications, services
 from ..access import get_expense_for_user, get_group_for_user
 from ..forms import ExpenseForm, display_name, format_decimal
 from ..models import Activity, Category
@@ -42,6 +42,7 @@ def expense_create(request, group_id: int):
         except ValidationError as exc:
             form.add_service_error(exc)
         else:
+            notifications.expense_saved(expense, actor=request.user, created=True)
             messages.success(request, f"Gasto «{expense.description}» guardado.")
             return redirect("ledger:group_detail", group_id=group.pk)
     return _render_form(request, group, form)
@@ -58,11 +59,15 @@ def expense_edit(request, group_id: int, expense_id: int):
         initial=ExpenseForm.initial_from_expense(expense, members),
     )
     if request.method == "POST" and form.is_valid():
+        previous_ids = notifications.participant_ids(expense)
         try:
-            services.update_expense(expense, actor=request.user, **form.service_kwargs())
+            expense = services.update_expense(expense, actor=request.user, **form.service_kwargs())
         except ValidationError as exc:
             form.add_service_error(exc)
         else:
+            notifications.expense_saved(
+                expense, actor=request.user, created=False, previous_ids=previous_ids
+            )
             messages.success(request, "Gasto actualizado.")
             return redirect("ledger:expense_detail", group_id=group.pk, expense_id=expense.pk)
     return _render_form(request, group, form, expense)

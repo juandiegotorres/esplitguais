@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Mi cuenta · Esplitiguais{% endblock %}
 
@@ -14,5 +15,24 @@
     <button type="submit" class="btn btn-primary">Guardar</button>
   </form>
 </div>
+{% if push_public_key %}
+<section class="card" id="notificaciones" x-data="pushToggle"
+         data-key="{{ push_public_key }}" data-csrf="{{ csrf_token }}"
+         data-subscribe="{% url 'pwa:push_subscribe' %}" data-unsubscribe="{% url 'pwa:push_unsubscribe' %}">
+  <h2>Notificaciones</h2>
+  <p class="help">Avisos en este dispositivo cuando alguien carga o edita un gasto en el que participás, o registra un pago con vos.</p>
+  <p class="help" x-show="state === 'unsupported'" x-cloak>Este navegador no permite notificaciones. En iPhone, primero <a href="{% url 'pwa:install' %}">instalá la app</a> en la pantalla de inicio y abrila desde ahí.</p>
+  <p class="help" x-show="state === 'denied'" x-cloak>Las notificaciones están bloqueadas. Habilitalas en los ajustes del teléfono (en iPhone: Ajustes → Notificaciones → Esplitiguais) y volvé a esta pantalla.</p>
+  <button type="button" class="btn btn-primary" x-show="state === 'off'" x-cloak @click="enable" :aria-busy="busy ? 'true' : null" :disabled="busy">Activar notificaciones</button>
+  <div class="inline" x-show="state === 'on'" x-cloak>
+    <span>Activadas en este dispositivo.</span>
+    <button type="button" class="btn btn-quiet" @click="disable" :aria-busy="busy ? 'true' : null" :disabled="busy">Desactivar</button>
+  </div>
+  <p class="errorlist" role="alert" x-show="error" x-text="error" x-cloak></p>
+</section>
+{% endif %}
 <p><a class="btn-link" href="{% url 'password_change' %}">Cambiar contraseña</a></p>
+{% endblock %}
+{% block scripts %}
+{% if push_public_key %}<script src="{% static 'js/push.js' %}"></script>{% endif %}
 {% endblock %}
