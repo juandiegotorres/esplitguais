@@ -229,17 +229,12 @@ hr {
   text-decoration: none;
 }
 
+/* Logo: dos monedas superpuestas (design/logo/final/logo-mark.svg) */
 .brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--on-accent);
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1;
+  flex-shrink: 0;
+  width: 35px;
+  height: 24px;
+  color: var(--accent);
 }
 
 /* App bar contextual: atrás + título. En la PWA instalada no hay botón "atrás" del navegador */
