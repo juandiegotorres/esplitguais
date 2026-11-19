@@ -142,7 +142,7 @@ Las contraseñas se guardan hasheadas: no se insertan a mano en la base de datos
 | Estrategia de caché | Estáticos: primero caché. Páginas: primero red; sin conexión muestra una página "Sin conexión" |
 | `base.html` | Link al manifest, `apple-touch-icon`, metas para iOS |
 | Sesión | `SESSION_COOKIE_AGE` de 90 días para no pedir login a cada rato |
-| iOS | Pantalla con instrucciones: Compartir → "Agregar a inicio" |
+| Instalar | Tarjeta "Instalá la app" en el login y en Mis grupos (`pwa/_install_card.html`, `static/js/install.js`): en Android/Chrome instala directo (`beforeinstallprompt`); en iPhone muestra los pasos (Compartir → "Agregar a inicio"). Oculta dentro de la app instalada. Guía completa en `/instalar/` |
 | Notificaciones | Web Push con VAPID: suscripción por dispositivo (`pwa.PushSubscription`), envío sincrónico al guardar (`pwa/push.py`), reglas de destinatarios en `ledger/notifications.py`. iOS: solo con la app instalada |
 
 Requiere HTTPS (lo da Cloudflare o un certificado propio).

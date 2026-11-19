@@ -1,0 +1,17 @@
+{% load static %}
+{# Botón para instalar (static/js/install.js). Oculto si la app ya corre instalada o si el navegador no puede instalarla. Android/Chrome: instala directo; iPhone: muestra los pasos. #}
+<section class="card install-card" x-data x-show="$store.install.mode !== 'none'" x-cloak aria-labelledby="install-title">
+  <div class="install-card-head">
+    <img src="{% static 'icons/icon-192.png' %}" width="48" height="48" alt="">
+    <div>
+      <h2 id="install-title">Instalá la app</h2>
+      <p class="help">Se abre desde la pantalla de inicio como cualquier app, sin la barra del navegador.</p>
+    </div>
+  </div>
+  <button type="button" class="btn btn-primary" @click="$store.install.install()"
+          :aria-expanded="$store.install.mode === 'ios' ? String($store.install.guideOpen) : null"
+          x-text="$store.install.mode === 'ios' ? ($store.install.guideOpen ? 'Ocultar los pasos' : 'Cómo instalarla') : 'Instalar app'">Instalar app</button>
+  <div x-show="$store.install.mode === 'ios' && $store.install.guideOpen" x-cloak>
+    {% include "pwa/_ios_steps.html" %}
+  </div>
+</section>

@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
   <script src="{% static 'js/alias.js' %}" defer></script>
+  <script src="{% static 'js/install.js' %}" defer></script>
   <script src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js" defer></script>
   <script src="{% static 'js/pwa.js' %}" defer></script>
   <script src="{% static 'js/loader.js' %}" defer></script>
@@ -38,6 +39,7 @@
               <a href="{% url 'profile' %}">Mi nombre y alias</a>
               {% if push_public_key %}<a href="{% url 'profile' %}#notificaciones">Notificaciones</a>{% endif %}
               <a href="{% url 'password_change' %}">Cambiar contraseña</a>
+              <a href="{% url 'pwa:install' %}" x-data x-show="$store.install.mode !== 'none'" x-cloak>Instalar app</a>
               <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}<button type="submit" class="btn-link danger">Salir</button></form>
             </div>
           </details>

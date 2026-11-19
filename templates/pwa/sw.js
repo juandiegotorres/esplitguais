@@ -10,6 +10,7 @@ const PRECACHE_STATIC = [
   "{% static 'js/pwa.js' %}",
   "{% static 'js/alias.js' %}",
   "{% static 'js/loader.js' %}",
+  "{% static 'js/install.js' %}",
   "{% static 'fonts/sora-latin-var.woff2' %}",
   "{% static 'icons/icon-192.png' %}",
   "{% static 'icons/icon-512.png' %}",

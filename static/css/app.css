@@ -1714,10 +1714,36 @@ th {
   margin: 20px 0;
 }
 
-.install-icon-row img {
+.install-icon-row img,
+.install-card-head img {
   border-radius: 13px;
   outline: 1px solid rgb(255 255 255 / 0.1);
   outline-offset: -1px;
+}
+
+/* Tarjeta "Instalá la app" (templates/pwa/_install_card.html) */
+.install-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.install-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.install-card-head img {
+  flex-shrink: 0;
+}
+
+.install-card-head h2 {
+  margin-bottom: 2px;
+}
+
+.install-card .steps {
+  margin-top: 2px;
 }
 
 /* ---------- Pantallas más anchas ---------- */
