@@ -1585,10 +1585,13 @@ th {
   transition: opacity 150ms ease-out;
 }
 
-/* Carga de página (static/js/loader.js): barra indeterminada bajo la barra de estado,
-   contenido atenuado al seguir un link y spinner en el botón que envió un formulario
-   (ahí no se atenúa: el botón tiene que seguir bien visible). Aparecen a los 150 ms
-   para no parpadear en las respuestas rápidas. */
+/* Carga de página (static/js/loader.js): barra bajo la barra de estado, contenido
+   atenuado al seguir un link y spinner en el botón que envió un formulario (ahí no se
+   atenúa: el botón tiene que seguir bien visible).
+   Sin transiciones ni demoras: en iOS, una vez que arranca la navegación, WebKit deja
+   de avanzar transiciones y animaciones; solo se ve lo que cambia en el mismo cuadro del
+   toque. Por eso la barra ya está llena en su estado quieto y el brillo que la recorre
+   es un extra donde el navegador sí lo anima. */
 .page-loader {
   position: fixed;
   z-index: 50;
@@ -1596,45 +1599,26 @@ th {
   left: 0;
   right: 0;
   height: 3px;
-  overflow: hidden;
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 150ms ease-out;
-}
-
-.page-loader::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 40%;
-  border-radius: 999px;
-  background: var(--accent);
+  visibility: hidden;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hover) 50%, var(--accent) 100%)
+    0 0 / 200% 100%;
   box-shadow: 0 0 8px var(--accent-ring);
-  translate: -100% 0;
 }
 
 .is-loading .page-loader {
-  opacity: 1;
-  transition-delay: 150ms;
-}
-
-.is-loading .page-loader::before {
-  animation: page-loader 900ms cubic-bezier(0.65, 0, 0.35, 1) infinite;
-}
-
-main.container {
-  transition: opacity 200ms ease-out;
-}
-
-.is-navigating main.container {
-  opacity: 0.45;
-  transition-delay: 150ms;
+  visibility: visible;
+  animation: page-loader 900ms linear infinite;
 }
 
 @keyframes page-loader {
   to {
-    translate: 250% 0;
+    background-position: -200% 0;
   }
+}
+
+.is-navigating main.container {
+  opacity: 0.45;
 }
 
 [aria-busy="true"]::before {
@@ -1651,14 +1635,6 @@ main.container {
 @keyframes spin {
   to {
     rotate: 360deg;
-  }
-}
-
-/* Con movimiento reducido (la regla global apaga las animaciones): barra llena, quieta */
-@media (prefers-reduced-motion: reduce) {
-  .is-loading .page-loader::before {
-    width: 100%;
-    translate: none;
   }
 }
 
