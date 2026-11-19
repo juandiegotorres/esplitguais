@@ -2,7 +2,7 @@
 
 App web para repartir gastos entre amigos, estilo Splitwise. Uso privado: los usuarios los crea el administrador a mano. Diseño y decisiones en [PLAN.md](PLAN.md).
 
-Stack: Django 5.2 + SQLite + HTMX/Alpine.js, servida con gunicorn + whitenoise en Docker y expuesta con Cloudflare Tunnel.
+Stack: Django 5.2 + SQLite + HTMX/Alpine.js. Dos formas de desplegarla: Docker (gunicorn + whitenoise, expuesta con Cloudflare Tunnel) o cPanel/Hostinger (LiteSpeed, detrás del proxy de Cloudflare). Producción hoy: **cPanel**.
 
 ## Desarrollo local (sin Docker)
 
@@ -38,7 +38,7 @@ Abrir <http://127.0.0.1:8000/>. Para no repetir los `-f`: `export COMPOSE_FILE=d
 
 ## Usuarios
 
-No hay registro público ni email. Todo lo hace el administrador desde el servidor (en producción `docker compose exec app ...`; en local sin Docker, `DEBUG=1 .venv/bin/python manage.py ...`):
+No hay registro público ni email. Todo lo hace el administrador desde el servidor (con Docker `docker compose exec app python manage.py ...`; en cPanel `~/esplitiguais/scripts/cpanel-manage.sh ...`; en local sin Docker, `DEBUG=1 .venv/bin/python manage.py ...`):
 
 ```bash
 docker compose exec app python manage.py crear_usuario juan       # pide la contraseña dos veces
@@ -58,9 +58,9 @@ docker compose exec app python manage.py createsuperuser          # cuenta con a
 
 `django-axes` bloquea **la combinación usuario + IP** tras 5 intentos fallidos, durante 1 hora. Un login correcto pone el contador en cero. Que un amigo se equivoque no bloquea a los demás ni a ese mismo usuario desde otra conexión.
 
-La IP real sale del header `CF-Connecting-IP` que agrega Cloudflare (sin él, de `REMOTE_ADDR`). Es confiable porque la app no publica puertos: solo le llega tráfico a través de `cloudflared`.
+La IP real sale del header `CF-Connecting-IP` que agrega Cloudflare, pero solo se le cree si la conexión viene de un borde de Cloudflare (rangos de <https://www.cloudflare.com/ips/> en `accounts/ip.py`) o de una red privada (el contenedor `cloudflared` en Docker). Si no, se usa `REMOTE_ADDR`: en cPanel cualquiera puede pegarle directo a la IP del servidor e inventarse el header para esquivar el bloqueo. Si Cloudflare publica rangos nuevos, actualizar la lista. (En Hostinger, LiteSpeed ya pone la IP real del cliente en `REMOTE_ADDR` cuando el pedido viene por Cloudflare.)
 
-Desbloquear antes de la hora: `resetear_password` (desbloquea al usuario) o `docker compose exec app python manage.py axes_reset_username juan`.
+Desbloquear antes de la hora: `resetear_password` (desbloquea al usuario) o `manage.py axes_reset_username juan` (con el prefijo de Docker o cPanel de arriba).
 
 ## Despliegue en el VPS (Cloudflare Tunnel)
 
@@ -117,20 +117,72 @@ sudo ufw status verbose
 
 Verificar que no quedó nada expuesto: `docker compose ps` no debe mostrar `0.0.0.0:...` en ningún servicio, y `sudo ss -tlnp` solo debe listar el 22 (y servicios propios del VPS que ya existían).
 
-## Backups
+## Despliegue en cPanel (Hostinger)
 
-`scripts/backup.sh` corre dentro del contenedor y hace una copia consistente con la API de backup de SQLite (sirve con la app funcionando), la verifica con `integrity_check` y la deja en `data/backups/db-YYYYmmdd-HHMMSS.sqlite3` (hora UTC). Conserva las últimas 14 (`BACKUP_KEEP` para cambiarlo).
+El hosting compartido no tiene Docker ni root. La app corre así:
+
+- **Código**: clon de GitHub (`main`) en `~/esplitiguais`; **base** en `~/esplitiguais/data/` (fuera del docroot y del repo); **virtualenv** con Python 3.11 en `~/virtualenv/esplitiguais/3.11` (el `python3` del sistema es 3.6).
+- **Docroot** `~/gastos.practicomercio.com.ar`: `static/` (lo genera `collectstatic`; LiteSpeed lo sirve directo) y `cgi-bin/app.cgi`. El `.htaccess` manda el resto de las URLs a `app.cgi`, que corre Django con `cpanel_cgi.py`.
+- **CGI**: LiteSpeed de Hostinger no trae soporte WSGI para Python (falta el paquete `alt-python311-wsgi-lsapi`, que solo instala el hosting). Cada request arranca Django de cero (~0,4 s en el servidor). Los estáticos no pasan por Python.
+- **HTTPS**: Cloudflare (registro DNS *proxied*) → LiteSpeed con certificado AutoSSL de cPanel.
+
+### 1. Preparar (una sola vez)
+
+1. cPanel → **Domains** → crear `gastos.practicomercio.com.ar` con docroot `gastos.practicomercio.com.ar` (en el home, **no** dentro de `public_html`).
+2. Por SSH en el servidor:
+
+   ```bash
+   /opt/alt/python311/bin/python3 -m venv ~/virtualenv/esplitiguais/3.11
+   git clone https://github.com/juandiegotorres/esplitguais.git ~/esplitiguais && cd ~/esplitiguais
+   (umask 077 && nano .env)   # SECRET_KEY nueva, DEBUG=0, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS, SECURE_HSTS_SECONDS=0 (ver .env.example)
+   scripts/cpanel-update.sh   # agrega STATIC_ROOT a .env si falta
+   ```
+
+3. Con el alias `cpanel` en `~/.ssh/config` de tu máquina, los siguientes deploys se hacen desde ahí (ver "Actualizar").
+4. IP del dominio: `uapi DomainInfo single_domain_data domain=gastos.practicomercio.com.ar | grep ' ip:'` (no es la del hostname del servidor).
+5. Cloudflare → zona `practicomercio.com.ar` → DNS: registro `A` `gastos` → esa IP, **Proxied**. Si existía un CNAME del túnel, reemplazarlo.
+6. Certificado del origen: cPanel → **SSL/TLS Status** → *Run AutoSSL* (o `uapi SSL start_autossl_check`). Con el certificado emitido, Cloudflare → SSL/TLS → modo **Full (strict)** y **Always Use HTTPS**.
+7. HSTS: dejar `SECURE_HSTS_SECONDS=0`. LiteSpeed de Hostinger ya envía `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`, y Django lo duplicaría (`check --deploy` igual avisa W004).
+8. Usuarios: `~/esplitiguais/scripts/cpanel-manage.sh createsuperuser` y `... crear_usuario juan`.
+
+### Actualizar
+
+Commitear y pushear a `main`, y después desde tu máquina:
 
 ```bash
-docker compose exec -T app scripts/backup.sh
+scripts/deploy-cpanel.sh
+```
+
+Se niega a correr si hay cambios sin commitear o si `HEAD` no es `origin/main`, así lo desplegado siempre es un commit publicado. En el servidor hace `git pull --ff-only` (falla si alguien editó archivos ahí: nunca editar código en el servidor) y `scripts/cpanel-update.sh`: backup, dependencias, migraciones, `collectstatic` y el bloque `# BEGIN esplitiguais` del `.htaccess` (el resto del archivo es de cPanel y no se toca). Para re-aplicar sin código nuevo, en el servidor: `~/esplitiguais/scripts/cpanel-update.sh`.
+
+### Pasar a Passenger (más rápido)
+
+Si Hostinger instala `alt-python311-wsgi-lsapi`, Django queda cargado en memoria entre requests en vez de arrancar en cada uno:
+
+```bash
+CPANEL_SERVER=passenger scripts/deploy-cpanel.sh
+```
+
+Usa `passenger_wsgi.py` y reemplaza las reglas CGI por directivas `Passenger*` en el `.htaccess`. Sin el paquete, LiteSpeed responde 503 (`stderr.log` en `~/esplitiguais` dice `lswsgi: No such file or directory`); para volver: `scripts/deploy-cpanel.sh`. Desde entonces hay que usar siempre `CPANEL_SERVER=passenger`, o el deploy vuelve a CGI.
+
+## Backups
+
+`scripts/backup.sh` hace una copia consistente con la API de backup de SQLite (sirve con la app funcionando), la verifica con `integrity_check` y la deja en `data/backups/db-YYYYmmdd-HHMMSS.sqlite3` (hora UTC). Conserva las últimas 14 (`BACKUP_KEEP` para cambiarlo). Con Docker corre dentro del contenedor; en cPanel, con el Python del virtualenv:
+
+```bash
+docker compose exec -T app scripts/backup.sh                                                       # Docker
+PYTHON=~/virtualenv/esplitiguais/3.11/bin/python ~/esplitiguais/scripts/backup.sh               # cPanel
 ```
 
 ### Cron diario
 
-`crontab -e` en el VPS (con un usuario que pueda usar Docker):
+`crontab -e` en el servidor (en el VPS, con un usuario que pueda usar Docker):
 
 ```cron
+# Docker
 30 6 * * * cd /home/USUARIO/esplitiguais && docker compose exec -T app scripts/backup.sh >> data/backups/backup.log 2>&1
+# cPanel (ya instalado en el servidor)
+30 6 * * * PYTHON=$HOME/virtualenv/esplitiguais/3.11/bin/python $HOME/esplitiguais/scripts/backup.sh >> $HOME/esplitiguais/data/backups/backup.log 2>&1
 ```
 
 06:30 UTC = 03:30 en Argentina. Revisar `data/backups/backup.log` de vez en cuando.
@@ -140,7 +192,7 @@ docker compose exec -T app scripts/backup.sh
 Un backup que vive en el mismo disco no sirve si se rompe el VPS. Desde tu computadora (o desde otro servidor, con su propio cron):
 
 ```bash
-rsync -av usuario@vps:esplitiguais/data/backups/ ~/backups/esplitiguais/
+rsync -av usuario@vps:esplitiguais/data/backups/ ~/backups/esplitiguais/    # cPanel: cpanel:esplitiguais/data/backups/
 ```
 
 Sin `--delete`: localmente se acumulan todas las copias aunque el VPS rote las 14 últimas.
@@ -162,7 +214,9 @@ scripts/restore.sh data/backups/db-20261118-063000.sqlite3
 
 Con el override de desarrollo: `COMPOSE="docker compose -f docker-compose.yml -f docker-compose.dev.yml" scripts/restore.sh ...`.
 
-Para restaurar una copia bajada a otra máquina, primero subirla a `data/backups/` del VPS (`scp` o `rsync`) y después correr el script.
+Para restaurar una copia bajada a otra máquina, primero subirla a `data/backups/` del servidor (`scp` o `rsync`) y después correr el script.
+
+En cPanel: `~/esplitiguais/scripts/restore-cpanel.sh data/backups/db-20261118-063000.sqlite3`. Hace los pasos 2 a 4 con `scripts/restore_db.py`, el mismo código que usa `restore.sh`. No hay nada que frenar: con CGI cada request abre la base de nuevo.
 
 Probarlo de vez en cuando con una copia del proyecto (ver abajo) es la única forma de saber que los backups sirven.
 
@@ -193,4 +247,5 @@ docker compose down
 | `CSRF_TRUSTED_ORIGINS` | Igual pero con `https://` |
 | `SECURE_HSTS_SECONDS` | HSTS (`31536000` = un año); `0` lo desactiva |
 | `SECURE_SSL_REDIRECT` | Opcional; Cloudflare ya redirige a HTTPS |
-| `CLOUDFLARE_TUNNEL_TOKEN` | Token del túnel para `cloudflared` |
+| `STATIC_ROOT` | Solo cPanel: carpeta `static` del docroot (la agrega `deploy-cpanel.sh`). Por defecto `staticfiles/` |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Solo Docker: token del túnel para `cloudflared` |

@@ -1,14 +1,17 @@
 #!/bin/sh
 # Copia consistente de la base SQLite (API de backup de sqlite3, segura con la app andando).
-# Corre DENTRO del contenedor; desde el host:
+# Docker: corre DENTRO del contenedor; desde el host:
 #   docker compose exec -T app scripts/backup.sh
+# cPanel: con el Python del virtualenv de la app (el python3 del sistema es 3.6):
+#   PYTHON=~/virtualenv/esplitiguais/3.11/bin/python ~/esplitiguais/scripts/backup.sh
 # Deja data/backups/db-YYYYmmdd-HHMMSS.sqlite3 y conserva las últimas $BACKUP_KEEP (14).
 set -eu
 
-DATA_DIR="${DATA_DIR:-/app/data}"
+DATA_DIR="${DATA_DIR:-$(cd "$(dirname "$0")/.." && pwd)/data}"
 DB="${DATA_DIR}/db.sqlite3"
 DEST="${DATA_DIR}/backups"
 KEEP="${BACKUP_KEEP:-14}"
+PYTHON="${PYTHON:-python}"
 
 if [ ! -f "${DB}" ]; then
     echo "ERROR: no existe ${DB}" >&2
@@ -20,7 +23,7 @@ OUT="${DEST}/db-$(date +%Y%m%d-%H%M%S).sqlite3"
 TMP="${OUT}.tmp"
 rm -f "${TMP}"
 
-python - "${DB}" "${TMP}" <<'EOF'
+"${PYTHON}" - "${DB}" "${TMP}" <<'EOF'
 import sqlite3
 import sys
 

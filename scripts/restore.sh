@@ -26,33 +26,7 @@ COMPOSE="${COMPOSE:-docker compose}"
 $COMPOSE stop app
 # Pase lo que pase (backup corrupto incluido), la app vuelve a levantarse.
 trap '$COMPOSE start app' EXIT
-$COMPOSE run --rm --no-deps -T --entrypoint python app - "/app/data/backups/${NAME}" <<'EOF'
-import sqlite3
-import sys
-import time
-from pathlib import Path
-
-backup = Path(sys.argv[1])
-db = Path("/app/data/db.sqlite3")
-
-src = sqlite3.connect(f"file:{backup}?mode=ro", uri=True)
-result = src.execute("PRAGMA integrity_check").fetchone()[0]
-if result != "ok":
-    sys.exit(f"ERROR: {backup.name} no pasó integrity_check: {result}")
-
-if db.exists():
-    safety = db.parent / "backups" / f"pre-restore-{time.strftime('%Y%m%d-%H%M%S')}.sqlite3"
-    current = sqlite3.connect(db)
-    with sqlite3.connect(safety) as out:
-        current.backup(out)
-    current.close()
-    print(f"Base anterior guardada en data/backups/{safety.name}")
-
-dst = sqlite3.connect(db)
-with dst:
-    src.backup(dst)
-dst.close()
-src.close()
-print(f"Restaurado {backup.name} sobre data/db.sqlite3")
-EOF
+# El script se pasa por stdin: sirve aunque la imagen sea anterior a scripts/restore_db.py.
+$COMPOSE run --rm --no-deps -T --entrypoint python app - \
+    "/app/data/backups/${NAME}" /app/data/db.sqlite3 < scripts/restore_db.py
 echo "Listo. La app se vuelve a levantar."

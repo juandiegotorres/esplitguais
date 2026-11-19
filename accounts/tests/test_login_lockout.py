@@ -9,6 +9,10 @@ IP_A = "190.0.0.1"
 IP_B = "181.0.0.2"
 # Detrás de Cloudflare Tunnel todas las requests llegan desde el contenedor cloudflared.
 TUNNEL_ADDR = "172.18.0.5"
+# En cPanel llegan desde un borde de Cloudflare.
+CLOUDFLARE_EDGE = "162.158.10.20"
+# Alguien que le pega directo a la IP del servidor.
+DIRECT_ADDR = "200.1.1.1"
 
 
 class LoginLockoutTests(TestCase):
@@ -62,3 +66,14 @@ class LoginLockoutTests(TestCase):
         self.fail_login(5, remote_addr="127.0.0.1")
         self.assertEqual(self.post(PASSWORD, remote_addr="127.0.0.1").status_code, 429)
         self.assert_logged_in(self.post(PASSWORD, remote_addr="127.0.0.2"))
+
+    def test_cf_header_from_cloudflare_edge_is_trusted(self):
+        self.fail_login(5, cf_ip=IP_A, remote_addr=CLOUDFLARE_EDGE)
+        self.assertEqual(self.post(PASSWORD, cf_ip=IP_A, remote_addr=CLOUDFLARE_EDGE).status_code, 429)
+        self.assert_logged_in(self.post(PASSWORD, cf_ip=IP_B, remote_addr=CLOUDFLARE_EDGE))
+
+    def test_spoofed_cf_header_from_direct_client_is_ignored(self):
+        # Cambiar el header en cada intento no evita el bloqueo: cuenta REMOTE_ADDR.
+        for fake_ip in ("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4", "5.5.5.5"):
+            self.post("incorrecta", cf_ip=fake_ip, remote_addr=DIRECT_ADDR)
+        self.assertEqual(self.post(PASSWORD, cf_ip="6.6.6.6", remote_addr=DIRECT_ADDR).status_code, 429)
