@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Nuevo grupo · Esplitiguais{% endblock %}
+{% block appbar %}{% url 'ledger:group_list' as back_url %}{% include "_appbar.html" with back_label="Mis grupos" %}{% endblock %}
 {% block content %}
 <div class="page-header">
   <h1>Nuevo grupo</h1>
@@ -15,16 +16,17 @@
   <fieldset class="field">
     <legend>Miembros</legend>
     <p class="help">Vos quedás incluido siempre. Podés sumar más gente después.</p>
-    {% for checkbox in form.members %}
-      <label class="inline">{{ checkbox.tag }} {{ checkbox.choice_label }}</label>
-    {% empty %}
+    {% if form.members %}
+      <ul class="list">
+        {% for checkbox in form.members %}
+          <li><label class="list-row">{{ checkbox.tag }} {{ checkbox.choice_label }}</label></li>
+        {% endfor %}
+      </ul>
+    {% else %}
       <p class="muted">No hay otros usuarios cargados.</p>
-    {% endfor %}
+    {% endif %}
     {{ form.members.errors }}
   </fieldset>
-  <div class="stack">
-    <button type="submit" class="btn btn-primary">Crear grupo</button>
-    <a class="btn btn-link" href="{% url 'ledger:group_list' %}">Cancelar</a>
-  </div>
+  <button type="submit" class="btn btn-primary">Crear grupo</button>
 </form>
 {% endblock %}

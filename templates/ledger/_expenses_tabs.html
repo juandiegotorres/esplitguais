@@ -1,0 +1,5 @@
+{# Sub-pestañas de Gastos. Requiere "group"; "subtab" ∈ {lista, estadisticas}. #}
+<nav class="segmented subtabs" aria-label="Vista de gastos">
+  <a href="{% url 'ledger:group_detail' group.pk %}"{% if subtab == "lista" %} aria-current="page"{% endif %}>Lista</a>
+  <a href="{% url 'ledger:expense_stats' group.pk %}"{% if subtab == "estadisticas" %} aria-current="page"{% endif %}>Estadísticas</a>
+</nav>

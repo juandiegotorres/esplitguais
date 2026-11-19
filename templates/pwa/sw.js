@@ -8,6 +8,8 @@ const OFFLINE_URL = "{% url 'pwa:offline' %}";
 const PRECACHE_STATIC = [
   "{% static 'css/app.css' %}",
   "{% static 'js/pwa.js' %}",
+  "{% static 'js/alias.js' %}",
+  "{% static 'fonts/sora-latin-var.woff2' %}",
   "{% static 'icons/icon-192.png' %}",
   "{% static 'icons/icon-512.png' %}",
   "{% static 'icons/icon-maskable-512.png' %}",

@@ -1,0 +1,7 @@
+{# Alias con botón "Copiar". Requiere "alias"; "owner" (opcional) para la etiqueta accesible. #}
+<span class="alias" x-data="copyText" data-copy="{{ alias }}">
+  <code class="alias-value">{{ alias }}</code>
+  <button type="button" class="btn-copy" @click="copy"
+          aria-label="Copiar alias{% if owner %} de {{ owner }}{% endif %}"
+          x-text="copied ? 'Copiado' : 'Copiar'">Copiar</button>
+</span>

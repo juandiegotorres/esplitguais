@@ -1,37 +1,39 @@
 {% extends "base.html" %}
-{% load money %}
+{% load money avatars %}
 {% block title %}{{ expense.description }} · {{ group.name }}{% endblock %}
+{% block appbar %}{% url 'ledger:group_detail' group.pk as back_url %}{% include "_appbar.html" with back_label=group.name %}{% endblock %}
 {% block content %}
 <div class="page-header">
   <h1>{{ expense.description }}</h1>
-  <a class="btn btn-link" href="{% url 'ledger:group_detail' group.pk %}">Volver</a>
 </div>
-<div class="card stack">
-  <p class="amount">{{ expense.amount_cents|ars }}</p>
-  <p class="muted">{{ expense.date|date:"l j \d\e F \d\e Y" }} · {{ expense.get_category_display }} · {{ expense.get_split_type_display }}</p>
+<div class="card">
+  <p class="amount amount-hero">{{ expense.amount_cents|ars }}</p>
+  <p class="muted">{{ expense.date|date:"l j \d\e F \d\e Y"|capfirst }} · {{ expense.get_category_display }} · {{ expense.get_split_type_display }}</p>
 </div>
 
-<section class="card stack">
-  <h2>Pagó</h2>
+<section>
+  <h2 class="section-title">{% if payers|length > 1 %}Pagaron{% else %}Pagó{% endif %}</h2>
   <ul class="list">
     {% for payer in payers %}
       <li class="list-row">
-        <span class="row-main">{{ payer.user.get_full_name|default:payer.user.username }}</span>
+        {% avatar payer.user %}
+        <span class="row-main"><span class="row-title">{{ payer.user.get_full_name|default:payer.user.username }}{% if payer.user == user %} <span class="badge">vos</span>{% endif %}</span></span>
         <span class="row-side amount">{{ payer.paid_cents|ars }}</span>
       </li>
     {% endfor %}
   </ul>
 </section>
 
-<section class="card stack">
-  <h2>Le toca a cada uno</h2>
+<section>
+  <h2 class="section-title">Le toca a cada uno</h2>
   <ul class="list">
     {% for share in shares %}
-      <li class="list-row">
+      <li class="list-row{% if share.user == user %} is-mine{% endif %}">
+        {% avatar share.user %}
         <span class="row-main">
-          {{ share.user.get_full_name|default:share.user.username }}
+          <span class="row-title">{{ share.user.get_full_name|default:share.user.username }}{% if share.user == user %} <span class="badge">vos</span>{% endif %}</span>
           {% if share.input_label %}
-            <span class="muted">({{ share.input_label }}{% if expense.split_type == "percent" %} %{% else %} partes{% endif %})</span>
+            <span class="muted">{{ share.input_label }}{% if expense.split_type == "percent" %} %{% else %} partes{% endif %}</span>
           {% endif %}
         </span>
         <span class="row-side amount">{{ share.owed_cents|ars }}</span>
@@ -46,7 +48,7 @@
 </p>
 
 <div class="grid-2">
-  <a class="btn" href="{% url 'ledger:expense_edit' group.pk expense.pk %}">Editar</a>
-  <a class="btn btn-danger" href="{% url 'ledger:expense_delete' group.pk expense.pk %}">Borrar</a>
+  <a class="btn" href="{% url 'ledger:expense_edit' group.pk expense.pk %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>Editar</a>
+  <a class="btn danger" href="{% url 'ledger:expense_delete' group.pk expense.pk %}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>Borrar</a>
 </div>
 {% endblock %}

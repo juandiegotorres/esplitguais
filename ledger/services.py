@@ -13,9 +13,9 @@ from datetime import date as date_type
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from django.utils import timezone
 
 from .models import (
@@ -54,6 +54,15 @@ class Transfer:
     from_user_id: int
     to_user_id: int
     amount_cents: int
+
+
+@dataclass(frozen=True)
+class GroupSpending:
+    total_cents: int
+    expense_count: int
+    paid_by_user: dict[int, int]
+    owed_by_user: dict[int, int]
+    by_category: dict[str, int]
 
 
 # ---------------------------------------------------------------------------
@@ -597,6 +606,9 @@ def create_settlement(
             errors["to_user_id"] = ["Quien recibe tiene que ser miembro del grupo."]
         if from_user_id == to_user_id:
             errors["to_user_id"] = ["Quien paga y quien recibe tienen que ser distintos."]
+        # Solo las partes registran el pago: quien lo hizo o quien lo recibió.
+        if actor.pk not in (from_user_id, to_user_id):
+            errors[NON_FIELD_ERRORS] = ["Solo podés registrar pagos que hiciste o que recibiste."]
         if errors:
             raise ValidationError(errors)
 
@@ -688,6 +700,47 @@ def group_balances(group) -> dict[int, int]:
         -1,
     )
     return dict(sorted(balances.items()))
+
+
+def group_spending(group) -> GroupSpending:
+    """Totales de los gastos activos del grupo (las liquidaciones no son gasto).
+
+    ``paid_by_user``: cuánto puso cada uno; ``owed_by_user``: cuánto le tocaba según los
+    repartos. Incluyen a todos los miembros (0 si no participó). ``by_category`` solo
+    lleva categorías con gastos.
+    """
+    expenses = Expense.objects.active().filter(group=group)
+    totals = expenses.aggregate(total=Sum("amount_cents"), count=Count("id"))
+    by_category = dict(
+        expenses.order_by()
+        .values("category")
+        .annotate(total=Sum("amount_cents"))
+        .values_list("category", "total")
+    )
+
+    active_expense = {"expense__group": group, "expense__deleted_at__isnull": True}
+    members = _member_ids(group)
+    paid = dict.fromkeys(members, 0)
+    paid.update(
+        ExpensePayer.objects.filter(**active_expense)
+        .values("user_id")
+        .annotate(total=Sum("paid_cents"))
+        .values_list("user_id", "total")
+    )
+    owed = dict.fromkeys(members, 0)
+    owed.update(
+        ExpenseShare.objects.filter(**active_expense)
+        .values("user_id")
+        .annotate(total=Sum("owed_cents"))
+        .values_list("user_id", "total")
+    )
+    return GroupSpending(
+        total_cents=totals["total"] or 0,
+        expense_count=totals["count"],
+        paid_by_user=dict(sorted(paid.items())),
+        owed_by_user=dict(sorted(owed.items())),
+        by_category=by_category,
+    )
 
 
 def simplify_debts(balances: Mapping[int, int]) -> list[Transfer]:

@@ -1,36 +1,60 @@
 {% extends "base.html" %}
 {% load money %}
 {% block title %}{{ group.name }} · Esplitiguais{% endblock %}
+{% block appbar %}{% url 'ledger:group_list' as back_url %}{% include "_appbar.html" with back_label="Mis grupos" title=group.name %}{% include "ledger/_member_stack.html" %}{% endblock %}
+{% block tabbar %}{% include "ledger/_group_nav.html" %}{% endblock %}
 {% block content %}
-<div class="page-header">
-  <h1>{{ group.name }}</h1>
-  <p>
-    {% if balance > 0 %}<span class="muted">Te deben</span> <span class="amount amount-pos">{{ balance|ars }}</span>
-    {% elif balance < 0 %}<span class="muted">Debés</span> <span class="amount amount-neg">{{ balance|ars }}</span>
-    {% else %}<span class="muted">Estás al día</span>{% endif %}
-  </p>
-</div>
-{% include "ledger/_group_nav.html" with active="gastos" %}
+{% include "ledger/_expenses_tabs.html" %}
+<section class="hero" aria-label="Tu saldo en el grupo">
+  {% if balance > 0 %}
+    <p class="hero-label">Te deben en este grupo</p>
+    <p class="amount hero-amount">{{ balance|ars }}</p>
+  {% elif balance < 0 %}
+    <p class="hero-label">Debés en este grupo</p>
+    <p class="amount hero-amount">{{ balance|abs|ars }}</p>
+  {% else %}
+    <p class="hero-label">Tu saldo</p>
+    <p class="hero-amount">Al día</p>
+  {% endif %}
+  {% if balance %}
+    <a class="btn btn-sm hero-action" href="{% url 'ledger:balances' group.pk %}">{% if balance < 0 %}Saldar{% else %}Ver saldos{% endif %}</a>
+  {% endif %}
+  {% if my_transfers %}
+    <ul class="hero-detail">
+      {% for t in my_transfers|slice:":3" %}
+        <li>{% if t.owes_me %}{{ t.name }} te debe {{ t.amount_cents|ars }}{% else %}Le debés {{ t.amount_cents|ars }} a {{ t.name }}{% endif %}</li>
+      {% endfor %}
+      {% if my_transfers|length > 3 %}<li>y {{ my_transfers|length|add:"-3" }} más en Saldos</li>{% endif %}
+    </ul>
+  {% endif %}
+</section>
 {% if expenses %}
   {% regroup expenses by date as days %}
   <div class="stack">
     {% for day in days %}
       <section>
-        <h2 class="muted">{{ day.grouper|date:"l j \d\e F" }}</h2>
-        <ul class="list card">
+        <h2 class="section-title">{{ day.grouper|date:"l j \d\e F"|capfirst }}</h2>
+        <ul class="list">
           {% for expense in day.list %}
-            <li class="list-row">
-              <a class="row-main" href="{% url 'ledger:expense_detail' group.pk expense.pk %}">
-                <strong>{{ expense.description }}</strong><br>
-                <span class="muted">{{ expense.get_category_display }} · pagó {{ expense.payer_label }} {{ expense.amount_cents|ars }}</span>
+            <li>
+              <a class="list-row" href="{% url 'ledger:expense_detail' group.pk expense.pk %}">
+                <span class="row-main">
+                  <span class="row-title">{{ expense.description }}</span>
+                  <span class="muted">Pagó {{ expense.payer_label }}</span>
+                </span>
+                <span class="row-side">
+                  <span class="amount">{{ expense.amount_cents|ars }}</span>
+                  {% if expense.my_net_cents > 0 %}
+                    <span class="row-status amount-pos">te deben {{ expense.my_net_cents|ars }}</span>
+                  {% elif expense.my_net_cents < 0 %}
+                    <span class="row-status amount-neg">debés {{ expense.my_net_cents|abs|ars }}</span>
+                  {% elif expense.my_share_cents %}
+                    <span class="row-status muted">pagaste tu parte</span>
+                  {% else %}
+                    <span class="row-status muted">no participás</span>
+                  {% endif %}
+                </span>
               </a>
-              <span class="row-side">
-                {% if expense.my_share_cents %}
-                  <span class="muted">te toca</span><br><span class="amount">{{ expense.my_share_cents|ars }}</span>
-                {% else %}
-                  <span class="muted">no participás</span>
-                {% endif %}
-              </span>
             </li>
           {% endfor %}
         </ul>
@@ -42,5 +66,4 @@
     <p>Todavía no hay gastos en este grupo.</p>
   </div>
 {% endif %}
-<a class="fab" href="{% url 'ledger:expense_create' group.pk %}" aria-label="Agregar gasto">+ gasto</a>
 {% endblock %}

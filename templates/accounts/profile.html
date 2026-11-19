@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Mi cuenta · Esplitiguais{% endblock %}
+
+{% block appbar %}{% url 'ledger:group_list' as back_url %}{% include "_appbar.html" with back_label="Mis grupos" %}{% endblock %}
+
+{% block content %}
+<div class="page-header"><h1>Mi cuenta</h1></div>
+<div class="card">
+  <form method="post" action="{% url 'profile' %}" class="form stack" novalidate>
+    {% csrf_token %}
+    {% include "registration/_field.html" with field=name_form.first_name %}
+    {% include "registration/_field.html" with field=alias_form.alias %}
+    <button type="submit" class="btn btn-primary">Guardar</button>
+  </form>
+</div>
+<p><a class="btn-link" href="{% url 'password_change' %}">Cambiar contraseña</a></p>
+{% endblock %}

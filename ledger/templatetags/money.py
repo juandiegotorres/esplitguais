@@ -19,3 +19,11 @@ def ars_input(cents):
     if cents is None or cents == "":
         return ""
     return format_amount_input(int(cents))
+
+
+@register.filter(name="abs")
+def abs_cents(cents):
+    """{{ balance|abs|ars }}: el signo lo dice el texto ("debés"/"te deben"), no el monto."""
+    if cents is None or cents == "":
+        return cents
+    return abs(int(cents))

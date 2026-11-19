@@ -1,0 +1,9 @@
+{% comment %}App bar con "atrás". Requiere "back_url" y "back_label" (adónde vuelve).
+Con "title": flecha sola + título de la pantalla (h1). Sin "title": flecha + nombre del destino.{% endcomment %}
+<div class="appbar-lead">
+  <a class="appbar-back" href="{{ back_url }}"{% if title %} aria-label="Volver a {{ back_label }}"{% endif %}>
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    {% if not title %}<span>{{ back_label }}</span>{% endif %}
+  </a>
+  {% if title %}<h1 class="appbar-title">{{ title }}</h1>{% endif %}
+</div>

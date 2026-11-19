@@ -1,38 +1,32 @@
 {% extends "base.html" %}
 {% block title %}Actividad · {{ group.name }}{% endblock %}
+{% block appbar %}{% url 'ledger:group_list' as back_url %}{% include "_appbar.html" with back_label="Mis grupos" title=group.name %}{% include "ledger/_member_stack.html" %}{% endblock %}
+{% block tabbar %}{% include "ledger/_group_nav.html" %}{% endblock %}
 {% block content %}
-<div class="page-header">
-  <h1>{{ group.name }}</h1>
-</div>
-{% include "ledger/_group_nav.html" %}
+<h2 class="section-title">Actividad</h2>
 
-<section class="card">
-  {% if entries %}
-    <ul class="list">
-      {% for e in entries %}
-        <li class="list-row">
-          <div class="row-main">
-            <span aria-hidden="true">{{ e.icon }}</span>
-            {% if e.is_deleted %}<del>{% endif %}<strong>{{ e.actor }}</strong> {{ e.summary }}{% if e.is_deleted %}</del>{% endif %}
-            <div class="muted">
-              <time datetime="{{ e.created_at|date:'c' }}" title="{{ e.created_at|date:'d/m/Y H:i' }}">{{ e.when }}</time>
-            </div>
-          </div>
-          <div class="row-side">
-            <span class="badge">{% if e.is_deleted %}Borrado{% else %}{{ e.type_label|capfirst }}{% endif %}</span>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="empty">Todavía no hay actividad en este grupo.</p>
-  {% endif %}
-</section>
+{% if entries %}
+  <ul class="list">
+    {% for e in entries %}
+      <li class="list-row">
+        <div class="row-main">
+          <span>{% if e.is_deleted %}<del>{% endif %}<strong>{{ e.actor }}</strong> {{ e.summary }}{% if e.is_deleted %}</del>{% endif %}</span>
+          <time class="muted" datetime="{{ e.created_at|date:'c' }}" title="{{ e.created_at|date:'d/m/Y H:i' }}">{{ e.when }}</time>
+        </div>
+        {% if e.is_deleted %}
+          <div class="row-side"><span class="badge">Borrado</span></div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="empty">Todavía no hay actividad en este grupo.</p>
+{% endif %}
 
 {% if page.has_other_pages %}
   <nav class="grid-2" aria-label="Páginas">
-    {% if page.has_previous %}<a class="btn" href="?page={{ page.previous_page_number }}">Más recientes</a>{% else %}<span></span>{% endif %}
-    {% if page.has_next %}<a class="btn" href="?page={{ page.next_page_number }}">Más antiguos</a>{% endif %}
+    {% if page.has_previous %}<a class="btn btn-quiet" href="?page={{ page.previous_page_number }}">Más recientes</a>{% else %}<span></span>{% endif %}
+    {% if page.has_next %}<a class="btn btn-quiet" href="?page={{ page.next_page_number }}">Más antiguos</a>{% endif %}
   </nav>
   <p class="muted">Página {{ page.number }} de {{ page.paginator.num_pages }}</p>
 {% endif %}

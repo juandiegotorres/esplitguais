@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Referencia UI/UX: SplitZ → Esplitiguais</title>
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#070B0B">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Urbanist:wght@300;400;500;700&display=swap">
+  <!--
+    Archivo de prueba, no lo sirve Django. Abrir con un servidor local para que cargue el embed:
+      python3 -m http.server 8765 -d design   →   http://127.0.0.1:8765/referencia-splitz.html
+    Fuente: "SplitZ - Split Bill Mobile Application" (The Phong, Zoey Nguyen, Miley Nguyen, Vuong Nguyen), Behance 2023.
+    Los valores de color y tipografía salen de la lámina "Design System" del proyecto.
+  -->
+  <style>
+    :root {
+      /* Lámina "Design System" de SplitZ */
+      --sz-black: #070b0b;
+      --sz-white: #fafafa;
+      --sz-lime: #b2fa63;
+      --sz-dark-gray: #121c1c;
+      --sz-light-gray: #919b9b;
+      --sz-sun: #ff7833;
+      --sz-lavender: #776baa;
+
+      /* Derivados para la maqueta */
+      --line: #1f2b2b;
+      --line-strong: #2c3a3a;
+      --surface-raised: #182323;
+      --lime-soft: rgb(178 250 99 / 0.12);
+      --sun-soft: rgb(255 120 51 / 0.12);
+
+      --font-ui: "Urbanist", system-ui, sans-serif;
+      --font-num: "Space Grotesk", "Urbanist", system-ui, sans-serif;
+
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      background: var(--sz-black);
+      color: var(--sz-white);
+      font-family: var(--font-ui);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      scrollbar-color: var(--line-strong) var(--sz-black);
+    }
+
+    body { margin: 0; }
+
+    ::selection { background: var(--sz-lime); color: var(--sz-black); }
+
+    :focus-visible {
+      outline: 2px solid var(--sz-lime);
+      outline-offset: 3px;
+      border-radius: 6px;
+    }
+
+    a {
+      color: var(--sz-lime);
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+
+    p { margin: 0; text-wrap: pretty; }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 72px 24px 120px;
+    }
+
+    .page > * + section { margin-top: 112px; }
+
+    .lede {
+      max-width: 62ch;
+      margin-top: 20px;
+      color: var(--sz-light-gray);
+      font-size: 1.125rem;
+    }
+
+    h1 { font-size: clamp(2.25rem, 5vw, 3.75rem); line-height: 1.05; max-width: 18ch; }
+    h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); line-height: 1.1; margin-bottom: 12px; }
+    h3 { font-size: 1.125rem; font-weight: 500; letter-spacing: 0; }
+
+    .section-intro { max-width: 62ch; color: var(--sz-light-gray); }
+
+    /* ---------- Embed ---------- */
+
+    .embed-layout {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 40px;
+      align-items: start;
+      margin-top: 36px;
+    }
+
+    .embed {
+      margin: 0;
+      padding: 12px;
+      background: var(--sz-dark-gray);
+      border-radius: 16px;
+      box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px rgb(0 0 0 / 0.5);
+    }
+
+    .embed iframe {
+      display: block;
+      max-width: 100%;
+      border-radius: 8px;
+      background: var(--sz-black);
+    }
+
+    .embed figcaption {
+      margin-top: 10px;
+      font-size: 0.875rem;
+      color: var(--sz-light-gray);
+    }
+
+    .embed-notes { display: grid; gap: 16px; max-width: 52ch; }
+    .embed-notes p { color: var(--sz-light-gray); }
+    .embed-notes strong { color: var(--sz-white); font-weight: 500; }
+
+    /* ---------- Paleta ---------- */
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 36px;
+    }
+
+    .swatch {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 168px;
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--c);
+      color: var(--on);
+    }
+
+    .swatch.wide { grid-column: span 2; }
+    .swatch.outlined { box-shadow: inset 0 0 0 1px var(--line-strong); }
+
+    .swatch b { font-weight: 700; font-size: 1rem; }
+    .swatch code { font-family: var(--font-num); font-size: 0.8125rem; opacity: 0.8; }
+    .swatch p { margin-top: 8px; font-size: 0.875rem; line-height: 1.35; }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin-top: 48px;
+      border-top: 1px solid var(--line);
+    }
+
+    .type-cell {
+      padding: 32px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .type-cell + .type-cell { border-left: 1px solid var(--line); }
+
+    .type-cell .specimen { font-size: 3.25rem; line-height: 1.1; letter-spacing: -0.02em; }
+    .type-cell .weights { display: flex; gap: 16px; margin-top: 8px; color: var(--sz-light-gray); font-size: 0.9375rem; }
+    .type-cell p { margin-top: 16px; color: var(--sz-light-gray); max-width: 44ch; }
+
+    .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+
+    /* ---------- Teléfonos ---------- */
+
+    .phones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      justify-content: center;
+      margin-top: 48px;
+      padding: 56px 24px;
+      border-radius: 24px;
+      background:
+        radial-gradient(60% 50% at 20% 60%, rgb(64 160 40 / 0.22), transparent 70%),
+        var(--sz-black);
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+
+    .phone-wrap { display: grid; gap: 14px; justify-items: center; }
+    .phone-wrap > p { color: var(--sz-light-gray); font-size: 0.875rem; }
+
+    .phone {
+      position: relative;
+      width: 360px;
+      height: 760px;
+      border-radius: 48px;
+      padding: 10px;
+      background: #1c2222;
+      box-shadow:
+        inset 0 0 0 1px #3a4444,
+        0 2px 4px rgb(0 0 0 / 0.4),
+        0 24px 64px rgb(0 0 0 / 0.55);
+    }
+
+    .screen {
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 38px;
+      background: var(--sz-black);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 18px 24px;
+      scrollbar-width: none;
+    }
+
+    .appbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 22px 18px 6px;
+    }
+
+    .appbar h3 { flex: 1; font-size: 1.0625rem; font-weight: 700; }
+
+    .icon-btn {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--sz-dark-gray);
+      color: var(--sz-white);
+      cursor: pointer;
+    }
+
+    .icon-btn:hover { background: var(--surface-raised); }
+
+    .avatars { display: flex; }
+    .avatars span {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      margin-left: -8px;
+      border-radius: 999px;
+      box-shadow: 0 0 0 2px var(--sz-black);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--sz-black);
+    }
+
+    /* Saldo destacado: la única superficie lima de la pantalla */
+    .balance {
+      position: relative;
+      overflow: hidden;
+      padding: 18px 18px 16px;
+      border-radius: 20px;
+      background: var(--sz-lime);
+      color: var(--sz-black);
+    }
+
+    .balance::after {
+      /* Plano diagonal tomado del fondo de la tarjeta de saldo de SplitZ */
+      content: "";
+      position: absolute;
+      right: -40px;
+      bottom: -60px;
+      width: 180px;
+      height: 180px;
+      background: rgb(255 255 255 / 0.22);
+      transform: rotate(35deg);
+      border-radius: 12px;
+    }
+
+    .balance > * { position: relative; z-index: 1; }
+    .balance-label { font-size: 0.875rem; font-weight: 500; }
+    .balance-amount { margin-top: 2px; font-family: var(--font-num); font-weight: 700; font-size: 2.125rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+    .balance-detail { margin-top: 6px; font-size: 0.8125rem; font-weight: 500; }
+
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .quick button {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      padding: 12px 6px 10px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--sz-dark-gray);
+      color: var(--sz-white);
+      font: 500 0.75rem/1.2 var(--font-ui);
+      cursor: pointer;
+    }
+
+    .quick button svg { color: var(--sz-lime); }
+    .quick button:hover { background: var(--surface-raised); }
+
+    .list-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 22px 2px 10px;
+    }
+
+    .list-head h4 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+    .list-head span { font-size: 0.8125rem; color: var(--sz-light-gray); }
+
+    .rows { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+    .row {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 16px;
+      background: var(--sz-dark-gray);
+    }
+
+    .cat {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--surface-raised);
+      color: var(--sz-lime);
+    }
+
+    .row-title { font-weight: 600; font-size: 0.9375rem; line-height: 1.25; }
+    .row-sub { overflow: hidden; font-size: 0.75rem; color: var(--sz-light-gray); white-space: nowrap; text-overflow: ellipsis; }
+    .row-side { text-align: right; }
+    .row-amount { font-family: var(--font-num); font-weight: 500; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+    .row-status { font-size: 0.75rem; font-weight: 500; }
+
+    .is-pos { color: var(--sz-lime); }
+    .is-neg { color: var(--sz-sun); }
+    .is-zero { color: var(--sz-light-gray); }
+
+    /* Barra de pestañas con el botón de agregar en el centro */
+    .tabbar {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr 72px 1fr 1fr;
+      align-items: end;
+      padding: 10px 10px 26px;
+      background: var(--sz-dark-gray);
+      border-top: 1px solid var(--line);
+    }
+
+    .tabbar a {
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      color: var(--sz-light-gray);
+      text-decoration: none;
+      font-size: 0.6875rem;
+      font-weight: 500;
+    }
+
+    .tabbar a[aria-current="page"] { color: var(--sz-lime); }
+
+    .fab {
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      width: 56px;
+      height: 56px;
+      margin-top: -34px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--sz-lime);
+      color: var(--sz-black);
+      box-shadow: 0 0 0 6px var(--sz-black), 0 8px 20px rgb(0 0 0 / 0.5);
+      cursor: pointer;
+    }
+
+    .fab:active, .cta:active, .quick button:active { scale: 0.97; }
+
+    /* ---------- Formulario de gasto ---------- */
+
+    .amount-field {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 8px 2px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .amount-field span { font-family: var(--font-num); font-size: 1.75rem; color: var(--sz-lime); }
+
+    .amount-field input {
+      width: 100%;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--sz-white);
+      font-family: var(--font-num);
+      font-weight: 700;
+      font-size: 2.75rem;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      caret-color: var(--sz-lime);
+    }
+
+    .amount-field input:focus { outline: none; }
+    .amount-field:focus-within { border-color: var(--sz-lime); }
+
+    .field { display: grid; gap: 6px; margin-top: 16px; }
+    .field > label, .field-label { font-size: 0.8125rem; font-weight: 500; color: var(--sz-light-gray); }
+
+    .input {
+      width: 100%;
+      height: 48px;
+      padding: 0 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: 14px;
+      background: var(--sz-dark-gray);
+      color: var(--sz-white);
+      font: 500 0.9375rem var(--font-ui);
+      caret-color: var(--sz-lime);
+    }
+
+    .input::placeholder { color: var(--sz-light-gray); }
+    .input:focus { outline: none; border-color: var(--sz-lime); }
+
+    select.input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23919B9B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    /* Píldoras: pagador */
+    .pills { display: flex; gap: 8px; }
+    .pills label {
+      padding: 8px 14px;
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 1px var(--line-strong);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .pills input { position: absolute; opacity: 0; pointer-events: none; }
+    .pills label:has(input:checked) { background: var(--sz-lime); color: var(--sz-black); box-shadow: none; }
+    .pills label:has(input:focus-visible) { outline: 2px solid var(--sz-lime); outline-offset: 2px; }
+
+    /* Mosaico de tipos de reparto: los cuatro de la app en 2×2 */
+    .split-types {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .split-types label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      background: var(--sz-dark-gray);
+      box-shadow: inset 0 0 0 1px var(--line-strong);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+
+    .split-types svg { flex-shrink: 0; color: var(--sz-lime); }
+    .split-types input { position: absolute; opacity: 0; pointer-events: none; }
+    .split-types label:has(input:checked) { background: var(--sz-lime); color: var(--sz-black); box-shadow: none; }
+    .split-types label:has(input:checked) svg { color: var(--sz-black); }
+    .split-types label:has(input:focus-visible) { outline: 2px solid var(--sz-lime); outline-offset: 2px; }
+
+    .members { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+
+    .member {
+      display: grid;
+      grid-template-columns: 32px 1fr auto 22px;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: var(--sz-dark-gray);
+      cursor: pointer;
+    }
+
+    .member .avatar {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--sz-black);
+    }
+
+    .member-name { font-weight: 600; font-size: 0.875rem; }
+    .member-amount { font-family: var(--font-num); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+    .member:not(:has(input:checked)) .member-name,
+    .member:not(:has(input:checked)) .member-amount { color: var(--sz-light-gray); }
+
+    .member input {
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      margin: 0;
+      border-radius: 7px;
+      box-shadow: inset 0 0 0 1.5px var(--line-strong);
+      cursor: pointer;
+    }
+
+    .member input:checked {
+      background: var(--sz-lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23070B0B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center / 14px no-repeat;
+      box-shadow: none;
+    }
+
+    .split-check {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      color: var(--sz-light-gray);
+    }
+
+    .form-footer {
+      padding: 12px 18px 26px;
+      background: linear-gradient(to top, var(--sz-black) 70%, transparent);
+    }
+
+    .cta {
+      width: 100%;
+      height: 52px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--sz-lime);
+      color: var(--sz-black);
+      font: 700 1rem var(--font-ui);
+      cursor: pointer;
+    }
+
+    .cta:hover { background: #c2ff7f; }
+    .cta:disabled { background: var(--surface-raised); color: var(--sz-light-gray); cursor: not-allowed; }
+
+    /* ---------- Tabla y decisiones ---------- */
+
+    .table-wrap { margin-top: 36px; overflow-x: auto; border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+    th, td { padding: 14px 18px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    tr:last-child td { border-bottom: 0; }
+    th { font-weight: 500; color: var(--sz-light-gray); font-size: 0.8125rem; background: var(--sz-dark-gray); }
+    td:first-child { font-weight: 600; white-space: nowrap; }
+    td code { font-family: var(--font-num); font-size: 0.8125rem; color: var(--sz-white); }
+
+    .chip {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 6px;
+      border-radius: 4px;
+      vertical-align: -1px;
+      background: var(--c);
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+    }
+
+    .decisions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px 56px;
+      margin: 40px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .decisions h3 { margin-bottom: 8px; font-size: 1.25rem; }
+    .decisions p { color: var(--sz-light-gray); }
+    .decisions p + p { margin-top: 8px; }
+    .decisions strong { color: var(--sz-white); font-weight: 500; }
+
+    .takeaways {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 36px;
+    }
+
+    .takeaways > div { padding: 24px; border-radius: 16px; background: var(--sz-dark-gray); }
+    .takeaways h3 { margin-bottom: 12px; font-size: 1.25rem; }
+    .takeaways ul { margin: 0; padding-left: 18px; color: var(--sz-light-gray); display: grid; gap: 8px; }
+    .takeaways li::marker { color: var(--sz-lime); }
+    .takeaways .avoid li::marker { color: var(--sz-sun); }
+
+    @media (max-width: 860px) {
+      .embed-layout, .type-grid, .decisions, .takeaways { grid-template-columns: 1fr; }
+      .type-cell + .type-cell { border-left: 0; }
+      .palette { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 420px) {
+      .page { padding: 48px 16px 80px; }
+      .phones { padding: 32px 0; border-radius: 0; margin-inline: -16px; }
+      .phone { width: 100%; max-width: 360px; }
+      .palette { grid-template-columns: 1fr; }
+      .swatch.wide { grid-column: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fab:active, .cta:active, .quick button:active { scale: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+
+    <header>
+      <h1>SplitZ como referencia para Esplitiguais</h1>
+      <p class="lede">Caso de estudio de una app para dividir cuentas entre amigos: el mismo problema que resuelve Esplitiguais. Acá queda el embed original, el sistema visual que publica y cómo se traduciría a nuestras pantallas de grupo y de gasto.</p>
+    </header>
+
+    <section aria-labelledby="t-proyecto">
+      <h2 id="t-proyecto">El proyecto</h2>
+      <div class="embed-layout">
+        <figure class="embed">
+          <iframe src="https://www.behance.net/embed/project/182659057?ilo0=1" height="316" width="404" allowfullscreen lazyload frameborder="0" allow="clipboard-write" refererPolicy="strict-origin-when-cross-origin"></iframe>
+          <figcaption>Embed de Behance, tal cual se compartió. <a href="https://www.behance.net/gallery/182659057/SplitZ-Split-Bill-Mobile-Application">Ver el caso completo</a>.</figcaption>
+        </figure>
+        <div class="embed-notes">
+          <p><strong>Qué muestra el caso completo:</strong> objetivo, investigación con 30+ usuarios, persona, mapa del sitio, flujo principal, wireframes, sistema de diseño (colores, tipografía, íconos) y las pantallas finales: inicio con saldo, escaneo de tickets, reparto, amigos y grupos, billetera.</p>
+          <p><strong>Lo que coincide con nuestra app:</strong> grupos, gastos con reparto en partes iguales o por importe, historial de actividad por grupo, recordar quién debe. El 74% de los encuestados dice que sus amigos se olvidan de pagar después de una salida; el 57% se incomoda al reclamar.</p>
+          <p><strong>Lo que no aplica:</strong> billetera, tarjetas, recargas, pagos con QR y escaneo de tickets. <a href="../PLAN.md">PLAN.md</a> deja los pagos reales fuera de alcance y la foto del ticket para una fase posterior.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-sistema">
+      <h2 id="t-sistema">Paleta y tipografía</h2>
+      <p class="section-intro">Valores copiados de la lámina «Design System» del caso. El contraste está medido contra el gris oscuro de las tarjetas (<code class="num">#121C1C</code>).</p>
+
+      <div class="palette">
+        <div class="swatch outlined" style="--c: var(--sz-black); --on: var(--sz-white)">
+          <b>Black</b><code>#070B0B</code>
+          <p>Fondo de pantalla.</p>
+        </div>
+        <div class="swatch outlined" style="--c: var(--sz-dark-gray); --on: var(--sz-white)">
+          <b>Dark Gray</b><code>#121C1C</code>
+          <p>Tarjetas, filas, barra de pestañas.</p>
+        </div>
+        <div class="swatch wide" style="--c: var(--sz-lime); --on: var(--sz-black)">
+          <b>Lime</b><code>#B2FA63</code>
+          <p>Acción principal, pestaña activa, íconos, saldo destacado. Texto negro encima: 15,8:1. Como texto sobre gris: 13,9:1.</p>
+        </div>
+        <div class="swatch" style="--c: var(--sz-white); --on: var(--sz-black)">
+          <b>White</b><code>#FAFAFA</code>
+          <p>Texto principal. 16,7:1.</p>
+        </div>
+        <div class="swatch" style="--c: var(--sz-light-gray); --on: var(--sz-black)">
+          <b>Light Gray</b><code>#919B9B</code>
+          <p>Texto secundario. 6,1:1.</p>
+        </div>
+        <div class="swatch" style="--c: var(--sz-sun); --on: var(--sz-black)">
+          <b>Sun</b><code>#FF7833</code>
+          <p>Lo que falta pagar. Como texto: 6,6:1.</p>
+        </div>
+        <div class="swatch" style="--c: var(--sz-lavender); --on: var(--sz-white)">
+          <b>Lavender</b><code>#776BAA</code>
+          <p>Portada de grupo. Solo como fondo: como texto da 3,7:1.</p>
+        </div>
+      </div>
+
+      <div class="type-grid">
+        <div class="type-cell">
+          <div class="specimen" style="font-family: var(--font-ui)">Urbanist</div>
+          <div class="weights" style="font-family: var(--font-ui)"><span style="font-weight:300">Light</span><span>Regular</span><span style="font-weight:500">Medium</span><span style="font-weight:700">Bold</span></div>
+          <p>Interfaz: títulos, etiquetas, nombres. Geométrica y redonda; en tamaños chicos conviene Medium para no perder legibilidad sobre fondo oscuro.</p>
+        </div>
+        <div class="type-cell">
+          <div class="specimen num" style="font-weight:700">$ 123.000,00</div>
+          <div class="weights" style="font-family: var(--font-num)"><span style="font-weight:500">Space Grotesk Medium</span><span style="font-weight:700">Bold</span></div>
+          <p>Montos. En SplitZ el saldo y los importes van en esta fuente; acá con dígitos tabulares para que las columnas de pesos queden alineadas.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-maqueta">
+      <h2 id="t-maqueta">Así se verían nuestras pantallas</h2>
+      <p class="section-intro">Maqueta con contenido de Esplitiguais: pesos argentinos, los cuatro tipos de reparto y las pestañas reales del grupo. Los nombres e importes son de ejemplo. Los controles del formulario funcionan: elegir participantes recalcula las partes iguales.</p>
+
+      <div class="phones">
+
+        <div class="phone-wrap">
+          <div class="phone" role="group" aria-label="Maqueta: pantalla de gastos de un grupo">
+            <div class="screen">
+              <div class="appbar">
+                <button class="icon-btn" type="button" aria-label="Volver">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg>
+                </button>
+                <h3>Viaje a Bariloche</h3>
+                <div class="avatars" aria-label="Miembros: Juan, Ana, Leo, Mica y Sofi">
+                  <span style="background:#f4b8a8">J</span><span style="background:#b8d8f4">A</span><span style="background:#f4e3a8">L</span><span style="background:#cdb8f4">M</span><span style="background:#b8f4cf">S</span>
+                </div>
+              </div>
+
+              <div class="screen-body">
+                <div class="balance">
+                  <div class="balance-label">Te deben en este grupo</div>
+                  <div class="balance-amount">$ 414.915,90</div>
+                  <div class="balance-detail">Ana, Mica y Sofi $&nbsp;106.800,00 c/u · Leo $&nbsp;94.515,90</div>
+                </div>
+
+                <div class="quick">
+                  <button type="button">
+                    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Ver saldos
+                  </button>
+                  <button type="button">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5v.01M17.5 14.5v.01"/></svg>
+                    Registrar pago
+                  </button>
+                  <button type="button">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/></svg>
+                    Copiar alias
+                  </button>
+                </div>
+
+                <div class="list-head"><h4>Gastos</h4><span>Noviembre</span></div>
+                <ul class="rows">
+                  <li class="row">
+                    <span class="cat"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v8m-3-8v5a3 3 0 0 0 6 0V3M7 11v10M17 21V3c-2.2 0-4 2.7-4 6v5h4"/></svg></span>
+                    <div><div class="row-title">Asado del sábado</div><div class="row-sub">Pagaste vos · 15 nov</div></div>
+                    <div class="row-side"><div class="row-amount">$ 84.000,00</div><div class="row-status is-pos">te deben $ 67.200,00</div></div>
+                  </li>
+                  <li class="row">
+                    <span class="cat"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V8m0 6h18m0 4v-6a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.5"/></svg></span>
+                    <div><div class="row-title">Cabaña, 3 noches</div><div class="row-sub">Pagaste vos · 13 nov</div></div>
+                    <div class="row-side"><div class="row-amount">$ 450.000,00</div><div class="row-status is-pos">te deben $ 360.000,00</div></div>
+                  </li>
+                  <li class="row">
+                    <span class="cat"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 8H6.2"/><circle cx="9" cy="20" r="1.25"/><circle cx="17" cy="20" r="1.25"/></svg></span>
+                    <div><div class="row-title">Súper Dina Huapi</div><div class="row-sub">Pagó Leo · 13 nov</div></div>
+                    <div class="row-side"><div class="row-amount">$ 61.420,50</div><div class="row-status is-neg">debés $ 12.284,10</div></div>
+                  </li>
+                  <li class="row">
+                    <span class="cat"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M5 17v2m14-2v2M4 13l1.6-5.2A2 2 0 0 1 7.5 6.4h9a2 2 0 0 1 1.9 1.4L20 13M4 13h16v4H4z"/><path d="M7.5 15h.01M16.5 15h.01"/></svg></span>
+                    <div><div class="row-title">Nafta ida</div><div class="row-sub">Pagó Mica · 12 nov</div></div>
+                    <div class="row-side"><div class="row-amount">$ 72.000,00</div><div class="row-status is-zero">no participás</div></div>
+                  </li>
+                </ul>
+              </div>
+
+              <nav class="tabbar" aria-label="Secciones del grupo">
+                <a href="#" aria-current="page"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3zM9 8h6M9 12h6M9 16h3" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>Gastos</a>
+                <a href="#"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>Saldos</a>
+                <button class="fab" type="button" aria-label="Agregar gasto"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+                <a href="#"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>Actividad</a>
+                <a href="#"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.7a3.5 3.5 0 0 1 0 6.6M18 14.3c2.1.7 3.5 2.8 3.5 5.7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>Miembros</a>
+              </nav>
+            </div>
+          </div>
+          <p>Grupo: saldo propio arriba, gastos con tu parte</p>
+        </div>
+
+        <div class="phone-wrap">
+          <div class="phone">
+            <form class="screen" id="expense-mock" aria-label="Maqueta: formulario de gasto">
+              <div class="appbar">
+                <button class="icon-btn" type="button" aria-label="Cancelar">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                </button>
+                <h3>Nuevo gasto</h3>
+              </div>
+
+              <div class="screen-body">
+                <label class="amount-field">
+                  <span aria-hidden="true">$</span>
+                  <input id="mock-amount" name="amount" inputmode="decimal" value="84.000" aria-label="Importe en pesos" autocomplete="off">
+                </label>
+
+                <div class="field">
+                  <label for="mock-desc">Descripción</label>
+                  <input class="input" id="mock-desc" value="Asado del sábado" placeholder="Ej.: Cena en lo de Ana">
+                </div>
+
+                <div class="field">
+                  <label for="mock-cat">Categoría</label>
+                  <select class="input" id="mock-cat">
+                    <option>General</option>
+                    <option selected>Comida y bebida</option>
+                    <option>Supermercado</option>
+                    <option>Transporte</option>
+                    <option>Alojamiento</option>
+                    <option>Entretenimiento</option>
+                    <option>Servicios</option>
+                    <option>Otros</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <span class="field-label" id="mock-payer-label">Quién pagó</span>
+                  <div class="pills" role="radiogroup" aria-labelledby="mock-payer-label">
+                    <label><input type="radio" name="payer_mode" checked>Pagó una persona</label>
+                    <label><input type="radio" name="payer_mode">Pagaron varios</label>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="field-label" id="mock-split-label">Reparto</span>
+                  <div class="split-types" role="radiogroup" aria-labelledby="mock-split-label">
+                    <label><input type="radio" name="split_type" value="equal" checked>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M5 9h14M5 15h14"/></svg>Partes iguales</label>
+                    <label><input type="radio" name="split_type" value="exact">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M16.5 7.5c-.6-1.5-2.4-2.5-4.5-2.5-2.5 0-4.5 1.4-4.5 3.4 0 4.6 9 2.6 9 7.2 0 2-2 3.4-4.5 3.4-2.2 0-4-1-4.6-2.6"/></svg>Importes exactos</label>
+                    <label><input type="radio" name="split_type" value="percent">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>Porcentajes</label>
+                    <label><input type="radio" name="split_type" value="shares">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M17 14v6m-3-3h6"/></svg>Partes</label>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="field-label">Participantes</span>
+                  <ul class="members">
+                    <li><label class="member"><span class="avatar" style="background:#f4b8a8">J</span><span class="member-name">Juan (vos)</span><span class="member-amount" data-share></span><input type="checkbox" checked aria-label="Juan participa"></label></li>
+                    <li><label class="member"><span class="avatar" style="background:#b8d8f4">A</span><span class="member-name">Ana</span><span class="member-amount" data-share></span><input type="checkbox" checked aria-label="Ana participa"></label></li>
+                    <li><label class="member"><span class="avatar" style="background:#f4e3a8">L</span><span class="member-name">Leo</span><span class="member-amount" data-share></span><input type="checkbox" checked aria-label="Leo participa"></label></li>
+                    <li><label class="member"><span class="avatar" style="background:#cdb8f4">M</span><span class="member-name">Mica</span><span class="member-amount" data-share></span><input type="checkbox" checked aria-label="Mica participa"></label></li>
+                    <li><label class="member"><span class="avatar" style="background:#b8f4cf">S</span><span class="member-name">Sofi</span><span class="member-amount" data-share></span><input type="checkbox" checked aria-label="Sofi participa"></label></li>
+                  </ul>
+                  <p class="split-check" id="split-check" aria-live="polite"></p>
+                </div>
+              </div>
+
+              <div class="form-footer">
+                <button class="cta" type="submit" id="mock-submit">Guardar gasto</button>
+              </div>
+            </form>
+          </div>
+          <p>Gasto: importe primero, reparto en mosaico</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section aria-labelledby="t-mapeo">
+      <h2 id="t-mapeo">De SplitZ a Esplitiguais</h2>
+      <p class="section-intro">Comparación con los tokens que tenía <code class="num">static/css/app.css</code> antes de adoptar SplitZ. Lo que finalmente se aplicó está en «Decisiones tomadas».</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">Elemento</th><th scope="col">SplitZ</th><th scope="col">Hoy en app.css</th><th scope="col">Propuesta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Tema</td><td>Oscuro</td><td>Claro, <code>color-scheme: light</code></td><td>Oscuro como tema propio o como variante con <code>prefers-color-scheme</code></td></tr>
+            <tr><td>Fondo</td><td><span class="chip" style="--c:#070B0B"></span><code>#070B0B</code></td><td><span class="chip" style="--c:#f5f5f8"></span><code>--bg #f5f5f8</code></td><td>Black</td></tr>
+            <tr><td>Superficie</td><td><span class="chip" style="--c:#121C1C"></span><code>#121C1C</code></td><td><span class="chip" style="--c:#ffffff"></span><code>--surface #fff</code></td><td>Dark Gray; elevación por superficie, sin sombras</td></tr>
+            <tr><td>Acción principal</td><td><span class="chip" style="--c:#B2FA63"></span>Lime, texto negro</td><td><span class="chip" style="--c:#7c3aed"></span><code>--accent #7c3aed</code></td><td>Lime en <code>.btn-primary</code>, <code>.fab</code> y pestaña activa</td></tr>
+            <tr><td>Te deben</td><td>Lime</td><td><span class="chip" style="--c:#20703d"></span><code>--pos #20703d</code></td><td>Ver decisión abierta sobre el lima</td></tr>
+            <tr><td>Debés</td><td><span class="chip" style="--c:#FF7833"></span>Sun</td><td><span class="chip" style="--c:#b42318"></span><code>--neg #b42318</code></td><td>Sun para deuda; rojo solo para borrar</td></tr>
+            <tr><td>Texto secundario</td><td><span class="chip" style="--c:#919B9B"></span><code>#919B9B</code></td><td><span class="chip" style="--c:#64636f"></span><code>--muted #64636f</code></td><td>Light Gray</td></tr>
+            <tr><td>Tipografía</td><td>Urbanist + Space Grotesk</td><td>Fuente del sistema</td><td>Urbanist para la interfaz, Space Grotesk solo en <code>.amount</code> y <code>.amount-hero</code></td></tr>
+            <tr><td>Botón primario</td><td>Píldora de ancho completo</td><td><code>--radius 14px</code></td><td>Píldora en <code>.btn-primary</code>; tarjetas siguen en 14–16 px</td></tr>
+            <tr><td>Navegación</td><td>4 pestañas + botón central</td><td><code>.tabbar</code> de 4 + <code>.fab</code> flotante aparte</td><td>Integrar <code>.fab</code> al centro de <code>.tabbar</code></td></tr>
+            <tr><td>Reparto</td><td>Mosaico de 3 con ícono</td><td><code>.segmented</code> 2×2 sin íconos</td><td>Mosaico 2×2 con ícono, misma estructura de radios</td></tr>
+            <tr><td>Íconos</td><td>Trazo lima sobre baldosa gris</td><td>Trazo 1.75 en <code>.tabbar-icon</code></td><td>Mismo trazo, baldosa por categoría en filas de gasto</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="takeaways">
+        <div>
+          <h3>Tomar</h3>
+          <ul>
+            <li>Una sola superficie lima por pantalla: el saldo propio o la acción principal, nunca las dos compitiendo.</li>
+            <li>Cada fila de gasto dice cuánto te toca a vos, no solo el total.</li>
+            <li>Importe grande y primero en el formulario, con dígitos tabulares.</li>
+            <li>Agregar gasto siempre al alcance del pulgar, en el centro de la barra.</li>
+            <li>Tipos de reparto como opciones visibles con ícono, no escondidas en un desplegable.</li>
+          </ul>
+        </div>
+        <div class="avoid">
+          <h3>No copiar</h3>
+          <ul>
+            <li>Logo, marca «Z» y nombre de SplitZ.</li>
+            <li>Billetera, tarjetas, QR y pagos dentro de la app: fuera de alcance.</li>
+            <li>Escaneo de ticket: es la fase posterior «foto del ticket», no MVP.</li>
+            <li>Fondos con brillos verdes y objetos 3D: son de la presentación en Behance, no de la app.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-decisiones">
+      <h2 id="t-decisiones">Decisiones tomadas</h2>
+      <ul class="decisions">
+        <li>
+          <h3>Tema y color</h3>
+          <p>Oscuro fijo: <code class="num">color-scheme</code>, <code class="num">theme-color</code> y manifest en <code class="num">#070B0B</code>. Lima para la acción principal, la pestaña activa, el saldo destacado y «te deben»; Sun para «debés». Borrar y errores usan un rojo aparte (<code class="num">--danger</code>).</p>
+        </li>
+        <li>
+          <h3>Tipografía</h3>
+          <p>Urbanist para la interfaz y Space Grotesk para los montos, servidas desde <code class="num">static/fonts/</code> y precargadas por el service worker.</p>
+        </li>
+        <li>
+          <h3>Navegación y botones</h3>
+          <p>Botones en píldora. Dentro del grupo, «Nuevo gasto» es el círculo lima del centro de la barra; en la lista de grupos, «Nuevo grupo» flota abajo.</p>
+        </li>
+        <li>
+          <h3>Pantallas</h3>
+          <p>Saldo del grupo en tarjeta lima con a quién le debés o quién te debe. Cada gasto muestra el total y, abajo, tu parte en color. Listas unidas con divisores, sin accesos rápidos. Avatares pastel por persona y miembros arriba a la derecha. Formulario de gasto con importe gigante, reparto en mosaico y participantes en tarjetas.</p>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <script>
+    // Reparto en partes iguales de la maqueta: misma regla que ledger/services.py
+    // (centavos enteros; el resto va a los primeros participantes).
+    (() => {
+      const form = document.getElementById("expense-mock");
+      const amount = document.getElementById("mock-amount");
+      const check = document.getElementById("split-check");
+      const submit = document.getElementById("mock-submit");
+      const members = [...form.querySelectorAll(".member")];
+      const ars = new Intl.NumberFormat("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fmt = (cents) => "$ " + ars.format(cents / 100);
+
+      const parseCents = (text) => {
+        const clean = text.trim().replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+        if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
+        return Math.round(Number(clean) * 100);
+      };
+
+      const render = () => {
+        const total = parseCents(amount.value);
+        const active = members.filter((m) => m.querySelector("input").checked);
+        const equal = form.querySelector('input[name="split_type"]:checked').value === "equal";
+        members.forEach((m) => { m.querySelector("[data-share]").textContent = ""; });
+
+        if (total === null || total === 0) {
+          check.textContent = "Cargá un importe mayor a cero.";
+          submit.disabled = true;
+          return;
+        }
+        if (!active.length) {
+          check.textContent = "Elegí al menos un participante.";
+          submit.disabled = true;
+          return;
+        }
+        submit.disabled = false;
+        if (!equal) {
+          check.textContent = "En la app, este tipo de reparto abre un campo por persona.";
+          return;
+        }
+        const base = Math.floor(total / active.length);
+        const rest = total - base * active.length;
+        active.forEach((m, i) => {
+          m.querySelector("[data-share]").textContent = fmt(base + (i < rest ? 1 : 0));
+        });
+        check.textContent = `${fmt(total)} entre ${active.length} ${active.length === 1 ? "persona" : "personas"}.`;
+      };
+
+      form.addEventListener("input", render);
+      form.addEventListener("change", render);
+      form.addEventListener("submit", (e) => e.preventDefault());
+      render();
+    })();
+  </script>
+</body>
+</html>

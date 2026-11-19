@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Registrar pago · {{ group.name }}{% endblock %}
+{% block appbar %}{% url 'ledger:balances' group.pk as back_url %}{% include "_appbar.html" with back_label="Saldos" %}{% endblock %}
 {% block content %}
 <div class="page-header">
   <h1>Registrar pago</h1>
 </div>
-{% include "ledger/_group_nav.html" %}
 
-<form method="post" class="form card" novalidate>
+{{ aliases|json_script:"member-aliases" }}
+<form method="post" class="form card" novalidate x-data="recipientAlias" data-aliases="member-aliases" data-me="{{ request.user.pk }}">
   {% csrf_token %}
   {{ form.non_field_errors }}
   {% for field in form %}
@@ -15,10 +16,20 @@
       {{ field }}
       {% if field.errors %}<div class="field-error">{{ field.errors }}</div>{% endif %}
       {% if field.name == "amount" %}<p class="help">Ej.: 15.000 o 15.000,50</p>{% endif %}
+      {% if field.name == "to_user" %}
+        <div class="alias-box" x-show="alias" x-cloak>
+          <span class="muted">Alias para transferirle:</span>
+          <span class="alias" x-data="copyText" :data-copy="alias">
+            <code class="alias-value" x-text="alias"></code>
+            <button type="button" class="btn-copy" @click="copy" aria-label="Copiar alias" x-text="copied ? 'Copiado' : 'Copiar'">Copiar</button>
+          </span>
+        </div>
+        <p class="help" x-show="paying && !alias" x-cloak>Todavía no cargó su alias.</p>
+      {% endif %}
     </div>
   {% endfor %}
   <div class="grid-2">
-    <a class="btn" href="{% url 'ledger:balances' group.pk %}">Cancelar</a>
+    <a class="btn btn-quiet" href="{% url 'ledger:balances' group.pk %}">Cancelar</a>
     <button type="submit" class="btn btn-primary">Guardar pago</button>
   </div>
 </form>

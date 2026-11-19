@@ -110,7 +110,12 @@ class ExpenseForm(forms.Form):
         label="Importe",
         max_length=40,
         widget=forms.TextInput(
-            attrs={"inputmode": "decimal", "autocomplete": "off", "placeholder": "15.000,50"}
+            attrs={
+                "inputmode": "decimal",
+                "autocomplete": "off",
+                "placeholder": "0,00",
+                "class": "input-lg",
+            }
         ),
     )
     date = forms.DateField(label="Fecha", widget=forms.DateInput(attrs={"type": "date"}))

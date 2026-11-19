@@ -1,0 +1,7 @@
+{% load avatars %}{# Avatares de los miembros en la barra del grupo; llevan a la pestaña Miembros. Requiere "group". #}
+{% with members=group.members.all %}
+<a class="avatar-stack" href="{% url 'ledger:group_members' group.pk %}" aria-label="{{ members|length }} miembros">
+  {% for member in members|slice:":4" %}{% avatar member size="sm" %}{% endfor %}
+  {% if members|length > 4 %}<span class="avatar avatar-sm avatar-more" aria-hidden="true">+{{ members|length|add:"-4" }}</span>{% endif %}
+</a>
+{% endwith %}

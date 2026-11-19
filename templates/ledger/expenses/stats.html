@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load money avatars %}
+{% block title %}Estadísticas · {{ group.name }}{% endblock %}
+{% block appbar %}{% url 'ledger:group_list' as back_url %}{% include "_appbar.html" with back_label="Mis grupos" title=group.name %}{% include "ledger/_member_stack.html" %}{% endblock %}
+{% block tabbar %}{% include "ledger/_group_nav.html" %}{% endblock %}
+{% block content %}
+{% include "ledger/_expenses_tabs.html" %}
+{% if spending.expense_count %}
+  <section class="hero" aria-label="Total gastado en el grupo">
+    <p class="hero-label">Total gastado</p>
+    <p class="amount hero-amount">{{ spending.total_cents|ars }}</p>
+    <ul class="hero-detail">
+      <li>{{ spending.expense_count }} gasto{{ spending.expense_count|pluralize }}</li>
+      <li>Más pagó: {{ top_names|join:", " }}</li>
+    </ul>
+  </section>
+  <div class="stack">
+    <section>
+      <h2 class="section-title">Cuánto pagó cada uno</h2>
+      <ul class="list">
+        {% for row in rows %}
+          <li class="list-row">
+            {% avatar row.user %}
+            <div class="row-main">
+              <span class="row-title">{{ row.name }}{% if row.is_me %} <span class="badge">vos</span>{% endif %}{% if row.is_top %} <span class="badge success">pagó más</span>{% endif %}</span>
+              <span class="muted">Le tocaba {{ row.owed_cents|ars }}</span>
+              <span class="stat-bar" aria-hidden="true"><span style="width: {{ row.percent }}%"></span></span>
+            </div>
+            <div class="row-side">
+              <span class="amount">{{ row.paid_cents|ars }}</span>
+              <span class="muted">{{ row.percent }}% del total</span>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="section-title">Por categoría</h2>
+      <ul class="list">
+        {% for category in categories %}
+          <li class="list-row">
+            <div class="row-main">
+              <span class="row-title">{{ category.label }}</span>
+              <span class="stat-bar" aria-hidden="true"><span style="width: {{ category.percent }}%"></span></span>
+            </div>
+            <div class="row-side">
+              <span class="amount">{{ category.cents|ars }}</span>
+              <span class="muted">{{ category.percent }}%</span>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+{% else %}
+  <div class="empty">
+    <p>Todavía no hay gastos en este grupo.</p>
+  </div>
+{% endif %}
+{% endblock %}

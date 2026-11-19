@@ -59,11 +59,34 @@ def group_detail(request, group_id: int):
         expense.my_share_cents = sum(
             s.owed_cents for s in expense.shares.all() if s.user_id == request.user.pk
         )
-    balance = services.group_balances(group).get(request.user.pk, 0)
+        expense.my_paid_cents = sum(p.paid_cents for p in payers if p.user_id == request.user.pk)
+        # > 0: prestaste; < 0: te prestaron; 0: pagaste justo tu parte (o no participás).
+        expense.my_net_cents = expense.my_paid_cents - expense.my_share_cents
+    balances = services.group_balances(group)
+    balance = balances.get(request.user.pk, 0)
+    # Para la tarjeta de saldo: quién te paga a vos o a quién le pagás (mismo cálculo que Saldos).
+    names = {u.pk: display_name(u) for u in group.members.all()}
+    me = request.user.pk
+    my_transfers = [
+        {
+            "owes_me": t.to_user_id == me,
+            "name": names[t.from_user_id if t.to_user_id == me else t.to_user_id],
+            "amount_cents": t.amount_cents,
+        }
+        for t in services.simplify_debts(balances)
+        if me in (t.from_user_id, t.to_user_id)
+    ]
     return render(
         request,
         "ledger/groups/detail.html",
-        {"group": group, "expenses": expenses, "balance": balance, "active": "gastos"},
+        {
+            "group": group,
+            "expenses": expenses,
+            "balance": balance,
+            "my_transfers": my_transfers,
+            "active": "gastos",
+            "subtab": "lista",
+        },
     )
 
 

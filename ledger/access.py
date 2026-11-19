@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from .models import Expense, Group, Settlement
@@ -20,6 +21,13 @@ def get_expense_for_user(user, group_id: int, expense_id: int) -> tuple[Group, E
 
 
 def get_settlement_for_user(user, group_id: int, settlement_id: int) -> tuple[Group, Settlement]:
+    """404 salvo para las partes del pago (quien pagó o recibió) o quien lo registró."""
     group = get_group_for_user(user, group_id)
-    settlement = get_object_or_404(Settlement.objects.active(), pk=settlement_id, group=group)
+    settlement = get_object_or_404(
+        Settlement.objects.active().filter(
+            Q(from_user=user) | Q(to_user=user) | Q(created_by=user)
+        ),
+        pk=settlement_id,
+        group=group,
+    )
     return group, settlement

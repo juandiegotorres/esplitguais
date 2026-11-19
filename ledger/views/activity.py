@@ -13,13 +13,6 @@ from ..models import Activity
 PAGE_SIZE = 50
 RELATIVE_WINDOW = timedelta(days=7)
 
-ICONS = {
-    Activity.TargetType.GROUP: "👥",
-    Activity.TargetType.MEMBERSHIP: "👤",
-    Activity.TargetType.EXPENSE: "🧾",
-    Activity.TargetType.SETTLEMENT: "💸",
-}
-
 
 def _when(created_at, now) -> str:
     if now - created_at < timedelta(minutes=1):
@@ -40,8 +33,6 @@ def activity(request, group_id: int):
         {
             "actor": display_name(a.actor),
             "summary": a.payload.get("summary", ""),
-            "icon": ICONS.get(a.target_type, "•"),
-            "type_label": a.get_target_type_display(),
             "is_deleted": a.verb == Activity.Verb.DELETED,
             "created_at": a.created_at,
             "when": _when(a.created_at, now),

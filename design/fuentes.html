@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba de fuentes: Esplitiguais</title>
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#070B0B">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300..800&family=Space+Grotesk:wght@400..700&family=Plus+Jakarta+Sans:wght@300..800&family=Manrope:wght@300..800&family=Outfit:wght@300..800&family=DM+Sans:opsz,wght@9..40,300..800&family=DM+Mono:wght@400;500&family=Sora:wght@300..800&family=Geist:wght@300..800&family=Geist+Mono:wght@400..700&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Figtree:wght@300..800&family=Onest:wght@300..800&display=swap">
+  <!--
+    Archivo de prueba, no lo sirve Django. Compara pares de fuentes (interfaz + montos)
+    sobre la misma maqueta, con los tamaños y pesos de static/css/app.css.
+      python3 -m http.server 8765 -d design   →   http://127.0.0.1:8765/fuentes.html
+    Todas son OFL en Google Fonts; la elegida se autoaloja en static/fonts/ como las actuales.
+  -->
+  <style>
+    :root {
+      --bg: #070b0b;
+      --surface: #121c1c;
+      --surface-2: #1c2828;
+      --border: #1f2b2b;
+      --ink: #fafafa;
+      --ink-2: #c9d0d0;
+      --muted: #919b9b;
+      --accent: #b2fa63;
+      --on-accent: #070b0b;
+      --pos: #b2fa63;
+      --neg: #ff7833;
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.5 system-ui, sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body { margin: 0; padding: 32px 24px 64px; -webkit-font-smoothing: antialiased; }
+    h1, h2, h3, h4, p { margin: 0; }
+
+    .intro { max-width: 760px; margin: 0 auto 28px; }
+    .intro h1 { font-size: 1.75rem; letter-spacing: -0.02em; }
+    .intro p { margin-top: 8px; color: var(--ink-2); }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      align-items: center;
+      margin-top: 16px;
+      color: var(--ink-2);
+      font-size: 0.875rem;
+    }
+    .controls label { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+    .controls input[type="text"] {
+      width: 11ch;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+    }
+    .controls #group { width: 20ch; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 28px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    /* ---------- Una variante ---------- */
+
+    .spec { display: grid; gap: 10px; align-content: start; }
+    .spec-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; padding: 0 4px; }
+    .spec-head b { font-size: 0.9375rem; }
+    .spec-head span { color: var(--muted); font-size: 0.8125rem; text-align: right; }
+    .spec.is-current .spec-head b::after { content: " · actual"; color: var(--accent); }
+
+    .screen {
+      font-family: var(--ui), system-ui, sans-serif;
+      padding: 16px;
+      border-radius: 28px;
+      background: var(--bg);
+      box-shadow: inset 0 0 0 1px var(--border);
+    }
+
+    .num { font-family: var(--num), var(--ui), system-ui, sans-serif; letter-spacing: -0.01em; }
+    .tnum .num { font-variant-numeric: tabular-nums; }
+
+    .appbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+    .appbar .back {
+      display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px;
+      background: var(--surface); color: var(--ink); font-size: 1.25rem; line-height: 1;
+    }
+    .appbar h3 { flex: 1; font-size: 1.125rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+
+    .balance {
+      position: relative;
+      overflow: hidden;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+    .balance::after {
+      content: ""; position: absolute; right: -40px; bottom: -60px; width: 160px; height: 160px;
+      border-radius: 12px; background: rgb(255 255 255 / 0.22); transform: rotate(35deg);
+    }
+    .balance > * { position: relative; z-index: 1; }
+    .balance-label { font-size: 0.875rem; font-weight: 500; }
+    .balance-amount { font-size: 2.25rem; font-weight: 700; line-height: 1.1; }
+    .balance-detail { margin-top: 4px; font-size: 0.8125rem; font-weight: 500; }
+
+    .list-head { display: flex; justify-content: space-between; align-items: baseline; margin: 20px 2px 8px; }
+    .list-head h4 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+    .list-head span { color: var(--muted); font-size: 0.8125rem; }
+
+    .rows { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .row {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: var(--surface);
+    }
+    .avatar {
+      display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px;
+      background: var(--surface-2); color: var(--accent); font-size: 0.8125rem; font-weight: 700;
+    }
+    .row-title { overflow: hidden; font-size: 0.9375rem; font-weight: 600; line-height: 1.25; white-space: nowrap; text-overflow: ellipsis; }
+    .row-sub { overflow: hidden; color: var(--muted); font-size: 0.75rem; white-space: nowrap; text-overflow: ellipsis; }
+    .row-side { text-align: right; }
+    .row-amount { font-size: 0.9375rem; font-weight: 600; white-space: nowrap; }
+    .row-status { font-size: 0.75rem; font-weight: 500; white-space: nowrap; }
+    .is-pos { color: var(--pos); }
+    .is-neg { color: var(--neg); }
+    .is-zero { color: var(--muted); }
+
+    .field { margin-top: 20px; }
+    .field-label { color: var(--ink-2); font-size: 0.875rem; font-weight: 600; }
+    .amount-field {
+      display: flex; gap: 8px; align-items: baseline; margin-top: 6px; padding: 8px 14px;
+      border-radius: 16px; background: var(--surface);
+    }
+    .amount-field .cur { color: var(--accent); font-size: 1.75rem; font-weight: 600; }
+    .amount-field .val { font-size: 2.75rem; font-weight: 700; line-height: 1.15; }
+    .hint { margin-top: 6px; color: var(--muted); font-size: 0.8125rem; }
+
+    .btn {
+      display: block; width: 100%; min-height: 48px; margin-top: 16px; border: 0; border-radius: 999px;
+      background: var(--accent); color: var(--on-accent); font: 700 1rem var(--ui), system-ui, sans-serif;
+    }
+
+    .body-text { margin-top: 18px; color: var(--ink-2); font-size: 1rem; }
+    .glyphs { margin-top: 10px; color: var(--muted); font-size: 0.875rem; }
+    .glyphs .num { color: var(--ink-2); }
+
+    .tabbar {
+      display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 18px; padding: 6px;
+      border-radius: 999px; background: var(--surface);
+    }
+    .tabbar span { padding: 8px 0; border-radius: 999px; color: var(--muted); font-size: 0.8125rem; font-weight: 600; text-align: center; }
+    .tabbar .on { background: var(--accent); color: var(--on-accent); }
+
+    .weights { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px; color: var(--ink-2); font-size: 0.9375rem; }
+  </style>
+</head>
+<body class="tnum">
+  <header class="intro">
+    <h1>Prueba de fuentes</h1>
+    <p>Misma pantalla, distinto par de fuentes: la primera para la interfaz y la segunda para los montos. Tamaños y pesos sacados de <code>app.css</code>. La columna de montos queda alineada a la derecha para ver si los dígitos son tabulares.</p>
+    <div class="controls">
+      <label><input type="checkbox" id="tnum" checked> Dígitos tabulares</label>
+      <label>Monto grande <input type="text" id="amount" value="12.345,67" inputmode="decimal"></label>
+      <label>Grupo <input type="text" id="group" value="Viaje a Bariloche"></label>
+    </div>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+  <template id="spec">
+    <article class="spec">
+      <div class="spec-head"><b data-slot="name"></b><span data-slot="pair"></span></div>
+      <div class="screen">
+        <div class="appbar"><span class="back" aria-hidden="true">‹</span><h3 data-slot="group"></h3></div>
+
+        <div class="balance">
+          <div class="balance-label">Te deben en total</div>
+          <div class="balance-amount num">$ 48.250,00</div>
+          <div class="balance-detail">Ana, Lucho y 2 personas más</div>
+        </div>
+
+        <div class="list-head"><h4>Gastos</h4><span>Ver todos</span></div>
+        <ul class="rows">
+          <li class="row">
+            <span class="avatar">JD</span>
+            <div><div class="row-title">Cena en El Boliche de Alberto</div><div class="row-sub">Pagó Juandi · 5 personas · 14 nov</div></div>
+            <div class="row-side"><div class="row-amount num">$ 96.400,00</div><div class="row-status is-pos num">te deben $ 77.120,00</div></div>
+          </li>
+          <li class="row">
+            <span class="avatar">AN</span>
+            <div><div class="row-title">Nafta ida</div><div class="row-sub">Pagó Ana · 4 personas · 12 nov</div></div>
+            <div class="row-side"><div class="row-amount num">$ 41.111,11</div><div class="row-status is-neg num">debés $ 10.277,78</div></div>
+          </li>
+          <li class="row">
+            <span class="avatar">LU</span>
+            <div><div class="row-title">Cabaña 3 noches</div><div class="row-sub">Pagó Lucho · 4 personas · 11 nov</div></div>
+            <div class="row-side"><div class="row-amount num">$ 1.250.000,00</div><div class="row-status is-neg num">debés $ 312.500,00</div></div>
+          </li>
+          <li class="row">
+            <span class="avatar">MA</span>
+            <div><div class="row-title">Supermercado</div><div class="row-sub">Pagó Maite · 4 personas · 10 nov</div></div>
+            <div class="row-side"><div class="row-amount num">$ 11.111,11</div><div class="row-status is-zero">saldado</div></div>
+          </li>
+        </ul>
+
+        <div class="field">
+          <div class="field-label">Monto</div>
+          <div class="amount-field"><span class="cur num">$</span><span class="val num" data-slot="amount"></span></div>
+          <p class="hint">Dividido en partes iguales entre 4: cada uno pone <span class="num">$ 3.086,42</span>.</p>
+        </div>
+
+        <button class="btn" type="button">Agregar gasto</button>
+
+        <p class="body-text">¿Quién pagó la última ronda? Ñoquis del 29 con Ágata, Iñaki y Begoña.</p>
+        <p class="glyphs">Il1 O0 rn/m · <span class="num">0123456789 · 1.111.111,11</span></p>
+        <div class="weights" data-slot="weights"></div>
+
+        <div class="tabbar"><span class="on">Gastos</span><span>Saldos</span><span>Actividad</span></div>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    // Interfaz + montos. Mismo nombre en ambos = una sola familia con dígitos propios.
+    const variants = [
+      { name: "A", ui: "Urbanist", num: "Space Grotesk" },
+      { name: "B", ui: "Outfit", num: "Space Grotesk" },
+      { name: "C", ui: "Plus Jakarta Sans", num: "Plus Jakarta Sans" },
+      { name: "D", ui: "Manrope", num: "Manrope" },
+      { name: "E", ui: "Figtree", num: "Space Grotesk" },
+      { name: "F", ui: "Sora", num: "Sora", current: true },
+      { name: "G", ui: "Onest", num: "Onest" },
+      { name: "H", ui: "DM Sans", num: "DM Mono" },
+      { name: "I", ui: "Geist", num: "Geist Mono" },
+      { name: "J", ui: "Bricolage Grotesque", num: "Space Grotesk" },
+    ];
+
+    const grid = document.getElementById("grid");
+    const tpl = document.getElementById("spec");
+
+    for (const v of variants) {
+      const node = tpl.content.firstElementChild.cloneNode(true);
+      node.style.setProperty("--ui", `"${v.ui}"`);
+      node.style.setProperty("--num", `"${v.num}"`);
+      node.classList.toggle("is-current", Boolean(v.current));
+      node.querySelector('[data-slot="name"]').textContent = v.name;
+      node.querySelector('[data-slot="pair"]').textContent = v.ui === v.num ? v.ui : `${v.ui} + ${v.num}`;
+      const weights = node.querySelector('[data-slot="weights"]');
+      for (const [w, label] of [[300, "Light"], [400, "Regular"], [500, "Medium"], [600, "Semi"], [700, "Bold"]]) {
+        const s = document.createElement("span");
+        s.style.fontWeight = w;
+        s.textContent = label;
+        weights.append(s);
+      }
+      grid.append(node);
+    }
+
+    const sync = (id, slot) => {
+      const input = document.getElementById(id);
+      const apply = () => grid.querySelectorAll(`[data-slot="${slot}"]`).forEach((el) => { el.textContent = input.value; });
+      input.addEventListener("input", apply);
+      apply();
+    };
+    sync("amount", "amount");
+    sync("group", "group");
+
+    document.getElementById("tnum").addEventListener("change", (e) => {
+      document.body.classList.toggle("tnum", e.target.checked);
+    });
+  </script>
+</body>
+</html>

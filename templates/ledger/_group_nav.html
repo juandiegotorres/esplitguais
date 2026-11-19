@@ -1,7 +1,24 @@
-{# Requiere "group" en el contexto. "active" ∈ {gastos, saldos, actividad, miembros}. #}
-<nav class="group-nav">
-  <a href="{% url 'ledger:group_detail' group.pk %}" {% if active == "gastos" %}class="active" aria-current="page"{% endif %}>Gastos</a>
-  <a href="{% url 'ledger:balances' group.pk %}" {% if active == "saldos" %}class="active" aria-current="page"{% endif %}>Saldos</a>
-  <a href="{% url 'ledger:activity' group.pk %}" {% if active == "actividad" %}class="active" aria-current="page"{% endif %}>Actividad</a>
-  <a href="{% url 'ledger:group_members' group.pk %}" {% if active == "miembros" %}class="active" aria-current="page"{% endif %}>Miembros</a>
+{# Pestañas del grupo, fijas abajo (block "tabbar" de base.html). Requiere "group"; "active" ∈ {gastos, saldos, actividad, miembros}. En el centro, agregar gasto. #}
+<nav class="tabbar" aria-label="Secciones del grupo">
+  <div class="tabbar-inner">
+    <a href="{% url 'ledger:group_detail' group.pk %}"{% if active == "gastos" %} aria-current="page"{% endif %}>
+      <span class="tabbar-icon"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3zM9 8h6M9 12h6M9 16h3" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      Gastos
+    </a>
+    <a href="{% url 'ledger:balances' group.pk %}"{% if active == "saldos" %} aria-current="page"{% endif %}>
+      <span class="tabbar-icon"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      Saldos
+    </a>
+    <a class="tabbar-add" href="{% url 'ledger:expense_create' group.pk %}" aria-label="Nuevo gasto">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/></svg>
+    </a>
+    <a href="{% url 'ledger:activity' group.pk %}"{% if active == "actividad" %} aria-current="page"{% endif %}>
+      <span class="tabbar-icon"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      Actividad
+    </a>
+    <a href="{% url 'ledger:group_members' group.pk %}"{% if active == "miembros" %} aria-current="page"{% endif %}>
+      <span class="tabbar-icon"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.7a3.5 3.5 0 0 1 0 6.6M18 14.3c2.1.7 3.5 2.8 3.5 5.7" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      Miembros
+    </a>
+  </div>
 </nav>

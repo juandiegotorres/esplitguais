@@ -33,7 +33,7 @@ class GroupViewsTests(TestCase):
         self.assertEqual(groups, [self.group_a])
 
     def test_foreign_group_is_404_on_get_and_post(self):
-        for name in ("ledger:group_detail", "ledger:group_members"):
+        for name in ("ledger:group_detail", "ledger:group_members", "ledger:expense_stats"):
             url = reverse(name, args=[self.group_b.pk])
             with self.subTest(view=name):
                 self.assertEqual(self.client.get(url).status_code, 404)

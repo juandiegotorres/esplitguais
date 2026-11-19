@@ -5,6 +5,8 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from accounts.models import aliases_for
+
 from .. import services
 from ..access import get_group_for_user, get_settlement_for_user
 from ..forms_settlements import SettlementForm, display_name
@@ -69,7 +71,13 @@ def settlement_create(request, group_id: int):
     return render(
         request,
         "ledger/settlements/settlement_form.html",
-        {"group": group, "active": "saldos", "form": form},
+        {
+            "group": group,
+            "active": "saldos",
+            "form": form,
+            # Claves string: así las lee el JS con el value del <select>.
+            "aliases": {str(pk): alias for pk, alias in aliases_for(u.pk for u in members).items()},
+        },
     )
 
 

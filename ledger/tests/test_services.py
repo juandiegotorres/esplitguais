@@ -3,10 +3,10 @@ from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.test import SimpleTestCase, TestCase
 
-from ledger.models import Activity, Category, Expense, ExpenseShare, SplitType
+from ledger.models import Activity, Category, Expense, ExpenseShare, Settlement, SplitType
 from ledger.services import (
     PayerInput,
     ShareInput,
@@ -19,6 +19,7 @@ from ledger.services import (
     delete_expense,
     delete_settlement,
     group_balances,
+    group_spending,
     simplify_debts,
     update_expense,
 )
@@ -282,7 +283,18 @@ class LedgerServiceTests(TestCase):
                 amount_cents=100,
                 date=TODAY,
             )
+        with self.assertRaises(ValidationError) as ctx:
+            create_settlement(
+                group=self.group,
+                actor=self.u[0],
+                from_user_id=self.u[1].pk,
+                to_user_id=self.u[2].pk,
+                amount_cents=100,
+                date=TODAY,
+            )
+        self.assertIn(NON_FIELD_ERRORS, ctx.exception.message_dict)
         self.assertFalse(Expense.objects.exists())
+        self.assertFalse(Settlement.objects.exists())
 
     def test_balances_mixed_scenario(self):
         u = [x.pk for x in self.u]
@@ -315,10 +327,10 @@ class LedgerServiceTests(TestCase):
             amount_cents=1500, date=TODAY,
         )
         gone = create_settlement(
-            group=self.group, actor=self.u[4], from_user_id=u[6], to_user_id=u[5],
+            group=self.group, actor=self.u[6], from_user_id=u[6], to_user_id=u[5],
             amount_cents=99999, date=TODAY,
         )
-        delete_settlement(gone, actor=self.u[4])
+        delete_settlement(gone, actor=self.u[6])
 
         balances = self.assert_balanced()
         self.assertEqual(
@@ -366,9 +378,10 @@ class LedgerServiceTests(TestCase):
 
         transfers = simplify_debts(self.assert_balanced())
         self.assertLessEqual(len(transfers), 7)
+        by_pk = {x.pk: x for x in self.u}
         for t in transfers:
             create_settlement(
-                group=self.group, actor=self.u[0], from_user_id=t.from_user_id,
+                group=self.group, actor=by_pk[t.from_user_id], from_user_id=t.from_user_id,
                 to_user_id=t.to_user_id, amount_cents=t.amount_cents, date=TODAY,
             )
         self.assertTrue(all(v == 0 for v in group_balances(self.group).values()))
@@ -378,6 +391,37 @@ class LedgerServiceTests(TestCase):
             self.expense()
         with self.assertNumQueries(5):
             group_balances(self.group)
+
+    def test_spending_counts_active_expenses_only(self):
+        u = [x.pk for x in self.u]
+        self.expense()  # u0 paga 1000; u0, u1, u2 deben 334/333/333
+        self.expense(
+            amount_cents=600,
+            category=Category.TRANSPORT,
+            payers=[PayerInput(u[1], 400), PayerInput(u[2], 200)],
+            shares=[ShareInput(u[0]), ShareInput(u[1])],
+        )
+        deleted = self.expense(amount_cents=5000, payers=[PayerInput(u[3], 5000)])
+        delete_expense(deleted, actor=self.u[0])
+        # Una liquidación mueve saldos pero no es gasto.
+        create_settlement(
+            group=self.group, actor=self.u[1], from_user_id=u[1], to_user_id=u[0],
+            amount_cents=200, date=TODAY,
+        )
+
+        spending = group_spending(self.group)
+
+        self.assertEqual((spending.total_cents, spending.expense_count), (1600, 2))
+        self.assertEqual(set(spending.paid_by_user), set(u))
+        self.assertEqual(
+            {k: v for k, v in spending.paid_by_user.items() if v},
+            {u[0]: 1000, u[1]: 400, u[2]: 200},
+        )
+        self.assertEqual(
+            {k: v for k, v in spending.owed_by_user.items() if v},
+            {u[0]: 634, u[1]: 633, u[2]: 333},
+        )
+        self.assertEqual(spending.by_category, {Category.FOOD: 1000, Category.TRANSPORT: 600})
 
     def test_update_expense_replaces_rows_and_logs_changes(self):
         u = [x.pk for x in self.u]

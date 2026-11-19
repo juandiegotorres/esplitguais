@@ -1,14 +1,20 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static avatars %}
 {% block title %}{% if expense %}Editar gasto{% else %}Nuevo gasto{% endif %} · {{ group.name }}{% endblock %}
+{% block appbar %}{% if expense %}{% url 'ledger:expense_detail' group.pk expense.pk as back_url %}{% include "_appbar.html" with back_label=expense.description %}{% else %}{% url 'ledger:group_detail' group.pk as back_url %}{% include "_appbar.html" with back_label=group.name %}{% endif %}{% endblock %}
 {% block content %}
 <div class="page-header">
   <h1>{% if expense %}Editar gasto{% else %}Nuevo gasto{% endif %}</h1>
-  <a class="btn btn-link" href="{% if expense %}{% url 'ledger:expense_detail' group.pk expense.pk %}{% else %}{% url 'ledger:group_detail' group.pk %}{% endif %}">Cancelar</a>
 </div>
 <form method="post" class="form stack" x-data="expenseForm" novalidate>
   {% csrf_token %}
   {{ form.non_field_errors }}
+
+  <div class="amount-field{% if form.amount.errors %} field-error{% endif %}">
+    <label for="{{ form.amount.id_for_label }}">{{ form.amount.label }}</label>
+    <div class="amount-input"><span aria-hidden="true">$</span>{{ form.amount }}</div>
+    {{ form.amount.errors }}
+  </div>
 
   <div class="card stack">
     <div class="field">
@@ -18,20 +24,15 @@
     </div>
     <div class="grid-2">
       <div class="field">
-        <label for="{{ form.amount.id_for_label }}">{{ form.amount.label }} ($)</label>
-        {{ form.amount }}
-        {{ form.amount.errors }}
-      </div>
-      <div class="field">
         <label for="{{ form.date.id_for_label }}">{{ form.date.label }}</label>
         {{ form.date }}
         {{ form.date.errors }}
       </div>
-    </div>
-    <div class="field">
-      <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
-      {{ form.category }}
-      {{ form.category.errors }}
+      <div class="field">
+        <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+        {{ form.category }}
+        {{ form.category.errors }}
+      </div>
     </div>
   </div>
 
@@ -51,16 +52,15 @@
     </div>
 
     <div class="stack" x-show="payerMode === 'multiple'">
-      <ul class="list">
+      <ul class="people">
         {% for row in rows %}
-          <li class="list-row">
-            <div class="row-main">
-              <label for="id_payer_amount_{{ row.id }}">{{ row.name }}</label>
-              <span class="field">
-                <input type="text" inputmode="decimal" autocomplete="off" id="id_payer_amount_{{ row.id }}" name="payer_amount_{{ row.id }}" value="{{ row.payer_amount.value|default_if_none:'' }}" x-model="payerAmounts['{{ row.id }}']" placeholder="$ 0">
-                {{ row.payer_amount.errors }}
-              </span>
-            </div>
+          <li class="person">
+            {% avatar row.id row.name %}
+            <label class="person-name" for="id_payer_amount_{{ row.id }}">{{ row.name }}</label>
+            <span class="field person-input">
+              <input type="text" inputmode="decimal" autocomplete="off" id="id_payer_amount_{{ row.id }}" name="payer_amount_{{ row.id }}" value="{{ row.payer_amount.value|default_if_none:'' }}" x-model="payerAmounts['{{ row.id }}']" placeholder="$ 0">
+              {{ row.payer_amount.errors }}
+            </span>
           </li>
         {% endfor %}
       </ul>
@@ -73,36 +73,40 @@
 
   <fieldset class="card stack">
     <legend>¿Cómo se reparte?</legend>
-    <div class="segmented" role="radiogroup">
+    <div class="tiles" role="radiogroup" aria-label="Tipo de reparto">
       {% for value, label in form.fields.split_type.choices %}
-        <label><input type="radio" name="split_type" value="{{ value }}" x-model="splitType"{% if form.split_type.value == value %} checked{% endif %}> {{ label }}</label>
+        <label><input type="radio" name="split_type" value="{{ value }}" x-model="splitType"{% if form.split_type.value == value %} checked{% endif %}>
+          {% if value == "equal" %}<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 9h14M5 15h14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+          {% elif value == "exact" %}<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3v18M16.5 7.5c-.6-1.5-2.4-2.5-4.5-2.5-2.5 0-4.5 1.4-4.5 3.4 0 4.6 9 2.6 9 7.2 0 2-2 3.4-4.5 3.4-2.2 0-4-1-4.6-2.6" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {% elif value == "percent" %}<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M19 5 5 19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="7" cy="7" r="2.5" fill="none" stroke="currentColor" stroke-width="1.75"/><circle cx="17" cy="17" r="2.5" fill="none" stroke="currentColor" stroke-width="1.75"/></svg>
+          {% else %}<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M17 14v6m-3-3h6"/></g></svg>
+          {% endif %}
+          {{ label }}
+        </label>
       {% endfor %}
     </div>
     {{ form.split_type.errors }}
 
-    <ul class="list">
+    <ul class="people">
       {% for row in rows %}
-        <li class="list-row">
-          <div class="row-main">
-            <label class="inline" x-show="splitType === 'equal'">
-              <input type="checkbox" name="participants" value="{{ row.id }}" x-model="participants"{% if row.participant %} checked{% endif %}>
-              {{ row.name }}
-            </label>
-            <span x-show="splitType !== 'equal'">{{ row.name }}</span>
-            <span class="field" x-show="splitType === 'exact'">
-              <input type="text" inputmode="decimal" autocomplete="off" aria-label="Importe de {{ row.name }}" name="exact_{{ row.id }}" value="{{ row.exact.value|default_if_none:'' }}" x-model="exact['{{ row.id }}']" placeholder="$ 0">
-              {{ row.exact.errors }}
-            </span>
-            <span class="field" x-show="splitType === 'percent'">
-              <input type="text" inputmode="decimal" autocomplete="off" aria-label="Porcentaje de {{ row.name }}" name="percent_{{ row.id }}" value="{{ row.percent.value|default_if_none:'' }}" x-model="percent['{{ row.id }}']" placeholder="%">
-              {{ row.percent.errors }}
-            </span>
-            <span class="field" x-show="splitType === 'shares'">
-              <input type="text" inputmode="decimal" autocomplete="off" aria-label="Partes de {{ row.name }}" name="units_{{ row.id }}" value="{{ row.units.value|default_if_none:'' }}" x-model="units['{{ row.id }}']" placeholder="partes">
-              {{ row.units.errors }}
-            </span>
-          </div>
-          <span class="row-side amount" x-text="previewFor('{{ row.id }}')"></span>
+        <li class="person" :class="splitType === 'equal' && 'is-toggle'">
+          {% avatar row.id row.name %}
+          <label class="person-name" for="id_participant_{{ row.id }}" x-show="splitType === 'equal'">{{ row.name }}</label>
+          <span class="person-name" x-show="splitType !== 'equal'">{{ row.name }}</span>
+          <span class="field person-input" x-show="splitType === 'exact'">
+            <input type="text" inputmode="decimal" autocomplete="off" aria-label="Importe de {{ row.name }}" name="exact_{{ row.id }}" value="{{ row.exact.value|default_if_none:'' }}" x-model="exact['{{ row.id }}']" placeholder="$ 0">
+            {{ row.exact.errors }}
+          </span>
+          <span class="field person-input" x-show="splitType === 'percent'">
+            <input type="text" inputmode="decimal" autocomplete="off" aria-label="Porcentaje de {{ row.name }}" name="percent_{{ row.id }}" value="{{ row.percent.value|default_if_none:'' }}" x-model="percent['{{ row.id }}']" placeholder="%">
+            {{ row.percent.errors }}
+          </span>
+          <span class="field person-input" x-show="splitType === 'shares'">
+            <input type="text" inputmode="decimal" autocomplete="off" aria-label="Partes de {{ row.name }}" name="units_{{ row.id }}" value="{{ row.units.value|default_if_none:'' }}" x-model="units['{{ row.id }}']" placeholder="partes">
+            {{ row.units.errors }}
+          </span>
+          <span class="person-amount amount" x-text="previewFor('{{ row.id }}')"></span>
+          <input type="checkbox" class="check" id="id_participant_{{ row.id }}" name="participants" value="{{ row.id }}" x-model="participants" x-show="splitType === 'equal'"{% if row.participant %} checked{% endif %}>
         </li>
       {% endfor %}
     </ul>
@@ -120,7 +124,9 @@
     {% endif %}
   </fieldset>
 
-  <button type="submit" class="btn btn-primary">Guardar gasto</button>
+  <div class="form-footer">
+    <button type="submit" class="btn btn-primary">Guardar gasto</button>
+  </div>
 </form>
 {{ alpine_state|json_script:"expense-form-state" }}
 {% endblock %}

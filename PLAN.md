@@ -36,6 +36,7 @@ Lo que más código ocupa (formulario de gasto con varios pagadores y cuatro tip
 7. Historial de actividad: quién creó, editó o borró qué.
 8. Edición y borrado lógico de gastos (`deleted_at`), visible en el historial.
 9. PWA instalable en Android e iOS.
+10. Estadísticas por grupo (pestaña dentro de Gastos): total gastado, cuánto pagó cada uno frente a lo que le tocaba y gasto por categoría.
 
 ### Fase posterior (opcional)
 

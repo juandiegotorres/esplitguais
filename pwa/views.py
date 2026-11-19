@@ -7,8 +7,8 @@ from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.views.decorators.http import require_safe
 
-THEME_COLOR = "#F7F6F3"
-BACKGROUND_COLOR = "#F7F6F3"
+THEME_COLOR = "#070B0B"
+BACKGROUND_COLOR = "#070B0B"
 SW_VERSION_PLACEHOLDER = "__SW_VERSION__"
 
 

@@ -70,17 +70,23 @@ class BalancesViewsTests(TestCase):
         return self.client.post(self.url("settlement_create"), data)
 
     def test_registering_every_suggested_transfer_settles_the_group(self):
-        response = self.client.get(self.url("balances"))
-        transfers = response.context["transfers"]
-        self.assertGreater(len(transfers), 0)
-        self.assertLessEqual(len(transfers), 7)
+        # Cada deudor ve sus pagos en "Mis deudas" y los registra con el formulario prellenado.
+        pending = []
+        for user in self.users:
+            self.client.force_login(user)
+            response = self.client.get(self.url("balances"))
+            mine = response.context["my_transfers"]
+            pending += [(user, t["url"]) for t in mine if t["i_pay"]]
+        self.assertGreater(len(pending), 0)
+        self.assertLessEqual(len(pending), 7)
 
-        for transfer in transfers:
-            # Seguir el botón "Registrar pago" y enviar el formulario tal como viene prellenado.
-            form_page = self.client.get(transfer["url"])
+        for user, url in pending:
+            self.client.force_login(user)
+            form_page = self.client.get(url)
             self.assertEqual(form_page.status_code, 200)
             initial = form_page.context["form"].initial
-            query = parse_qs(urlparse(transfer["url"]).query)
+            query = parse_qs(urlparse(url).query)
+            self.assertEqual(initial["from_user"], user.pk)
             self.assertEqual(initial["from_user"], int(query["from"][0]))
             self.assertEqual(initial["to_user"], int(query["to"][0]))
             response = self.post_settlement(initial["from_user"], initial["to_user"],
@@ -89,17 +95,31 @@ class BalancesViewsTests(TestCase):
 
         response = self.client.get(self.url("balances"))
         self.assertEqual([r["cents"] for r in response.context["rows"]], [0] * 8)
-        self.assertEqual(response.context["transfers"], [])
+        self.assertEqual(response.context["my_transfers"], [])
+        self.assertEqual(response.context["group_transfers"], [])
         self.assertEqual(set(services.group_balances(self.group).values()), {0})
         self.assertEqual(Settlement.objects.active().filter(group=self.group).count(),
-                         len(transfers))
+                         len(pending))
+
+    def test_my_debts_are_separated_from_the_rest_of_the_group(self):
+        me = self.users[0].pk
+        transfers = services.simplify_debts(services.group_balances(self.group))
+        response = self.client.get(self.url("balances"))
+        mine = response.context["my_transfers"]
+        others = response.context["group_transfers"]
+        self.assertEqual(len(mine), sum(me in (t.from_user_id, t.to_user_id) for t in transfers))
+        self.assertEqual(len(mine) + len(others), len(transfers))
+        # Lo ajeno es solo informativo: sin botón para registrarlo ni alias para copiar.
+        for t in others:
+            self.assertNotIn("url", t)
+            self.assertNotIn("to_alias", t)
 
     def test_success_message_names_payer_amount_and_receiver(self):
         u = self.users
-        response = self.post_settlement(u[1].pk, u[2].pk, "40.000", note="transferencia")
+        response = self.post_settlement(u[0].pk, u[2].pk, "40.000", note="transferencia")
         self.assertRedirects(response, self.url("balances"), fetch_redirect_response=False)
         page = self.client.get(response.url)
-        self.assertContains(page, "Amigo1 le pagó $ 40.000,00 a Amigo2")
+        self.assertContains(page, "Amigo0 le pagó $ 40.000,00 a Amigo2")
 
     def test_invalid_settlements_are_rejected_with_errors(self):
         u = self.users
@@ -108,6 +128,8 @@ class BalancesViewsTests(TestCase):
             (u[1].pk, self.outsider.pk, "100", "to_user"),
             (u[1].pk, u[2].pk, "abc", "amount"),
             (u[1].pk, u[2].pk, "0", "amount"),
+            # Pago entre otros dos: no le corresponde a quien lo registra.
+            (u[1].pk, u[2].pk, "100", "__all__"),
         ]
         for from_id, to_id, amount, field in cases:
             with self.subTest(from_id=from_id, to_id=to_id, amount=amount):
@@ -132,9 +154,28 @@ class BalancesViewsTests(TestCase):
         response = self.client.post(self.url("settlement_delete", settlement.pk))
         self.assertEqual(response.status_code, 404)
 
+    def test_only_the_parties_can_delete_a_settlement(self):
+        u = self.users
+        settlement = services.create_settlement(
+            group=self.group, actor=u[1], from_user_id=u[1].pk,
+            to_user_id=u[2].pk, amount_cents=100, date=date(2026, 11, 18),
+        )
+        page = self.client.get(self.url("balances"))
+        self.assertNotContains(page, self.url("settlement_delete", settlement.pk))
+        response = self.client.post(self.url("settlement_delete", settlement.pk))
+        self.assertEqual(response.status_code, 404)
+        settlement.refresh_from_db()
+        self.assertIsNone(settlement.deleted_at)
+
+        self.client.force_login(u[2])
+        response = self.client.post(self.url("settlement_delete", settlement.pk))
+        self.assertRedirects(response, self.url("balances"))
+        settlement.refresh_from_db()
+        self.assertIsNotNone(settlement.deleted_at)
+
     def test_settlement_delete_requires_post(self):
         settlement = services.create_settlement(
-            group=self.group, actor=self.users[0], from_user_id=self.users[1].pk,
+            group=self.group, actor=self.users[0], from_user_id=self.users[0].pk,
             to_user_id=self.users[2].pk, amount_cents=100, date=date(2026, 11, 18),
         )
         response = self.client.get(self.url("settlement_delete", settlement.pk))
@@ -144,7 +185,7 @@ class BalancesViewsTests(TestCase):
 
     def test_outsider_gets_404_everywhere(self):
         settlement = services.create_settlement(
-            group=self.group, actor=self.users[0], from_user_id=self.users[1].pk,
+            group=self.group, actor=self.users[1], from_user_id=self.users[1].pk,
             to_user_id=self.users[2].pk, amount_cents=5000, date=date(2026, 11, 18),
         )
         self.client.force_login(self.outsider)

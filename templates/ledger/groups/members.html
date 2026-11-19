@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% load avatars %}
 {% block title %}Miembros · {{ group.name }} · Esplitiguais{% endblock %}
+{% block appbar %}{% url 'ledger:group_list' as back_url %}{% include "_appbar.html" with back_label="Mis grupos" title=group.name %}{% include "ledger/_member_stack.html" %}{% endblock %}
+{% block tabbar %}{% include "ledger/_group_nav.html" %}{% endblock %}
 {% block content %}
-<div class="page-header">
-  <h1>{{ group.name }}</h1>
-</div>
-{% include "ledger/_group_nav.html" with active="miembros" %}
-<ul class="list card">
+<h2 class="section-title">Miembros</h2>
+<ul class="list">
   {% for membership in memberships %}
     <li class="list-row">
-      <span class="row-main">{{ membership.user.get_full_name|default:membership.user.username }}{% if membership.user == user %} <span class="badge">vos</span>{% endif %}</span>
+      {% avatar membership.user %}
+      <span class="row-main"><span class="row-title">{{ membership.user.get_full_name|default:membership.user.username }}{% if membership.user == user %} <span class="badge">vos</span>{% endif %}</span></span>
       <span class="row-side muted">desde {{ membership.joined_at|date:"j/n/Y" }}</span>
     </li>
   {% endfor %}

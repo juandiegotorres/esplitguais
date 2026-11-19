@@ -49,7 +49,9 @@ docker compose exec app python manage.py createsuperuser          # cuenta con a
 - Las contraseñas se validan (mínimo 8 caracteres, no comunes, no solo números, no parecidas al usuario) y se guardan hasheadas. Nunca insertarlas a mano en la base.
 - `crear_usuario` rechaza nombres que ya existen aunque cambien mayúsculas (`Juan` vs `juan`). El login sí distingue mayúsculas.
 - Para scripts: `--password-stdin` lee la contraseña de la primera línea de la entrada estándar, p. ej. `printf '%s\n' "$CLAVE" | docker compose exec -T app python manage.py crear_usuario juan --password-stdin`.
-- Cada usuario cambia su propia contraseña desde la app tocando su nombre arriba a la derecha.
+- Cada usuario cambia su propia contraseña y carga su **nombre** (el que ven los demás; si está vacío se usa el usuario) y su **alias** (CBU/CVU) desde **Mi cuenta**, tocando su inicial (avatar) arriba a la derecha. El alias se muestra con un botón "Copiar" solo a quien le tiene que pagar: en **Mis deudas** de la pantalla de saldos y al registrar un pago propio. También se editan desde `/admin`, en el usuario.
+- En saldos, **Mis deudas** muestra lo que debés pagar y lo que te deben; **Deudas grupales**, lo que se deben los demás entre sí (solo informativo). Un pago solo lo pueden registrar quien lo hizo o quien lo recibió, y solo ellos (o quien lo cargó) lo pueden borrar.
+- En **Gastos**, la pestaña **Estadísticas** muestra el total gastado en el grupo, cuánto pagó cada uno (y cuánto le tocaba según los repartos) y el gasto por categoría. Los pagos registrados entre miembros no cuentan como gasto.
 - Desde `/admin` (superusuario) también se pueden crear, desactivar o editar usuarios.
 
 ### Bloqueo por intentos fallidos

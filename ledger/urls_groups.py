@@ -9,6 +9,11 @@ urlpatterns = [
     path("grupos/<int:group_id>/miembros/", groups.group_members, name="group_members"),
     path("grupos/<int:group_id>/gastos/nuevo/", expenses.expense_create, name="expense_create"),
     path(
+        "grupos/<int:group_id>/gastos/estadisticas/",
+        expenses.expense_stats,
+        name="expense_stats",
+    ),
+    path(
         "grupos/<int:group_id>/gastos/<int:expense_id>/",
         expenses.expense_detail,
         name="expense_detail",
